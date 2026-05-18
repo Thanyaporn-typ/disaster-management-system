@@ -22,6 +22,7 @@
         <!-- <span class="switcher-brand-icon"><i class="bi bi-shield-fill"></i></span> -->
         <span class="switcher-brand-name">ระบบบริหารจัดการภัยพิบัติ</span>
         <span class="demo-tag">DEMO</span>
+        <span class="version-tag">v{{ appVersion }}</span>
       </div>
       <div class="switcher-tabs">
         <button
@@ -70,12 +71,14 @@
 import CitizenApp from './CitizenApp.vue'
 import FieldOfficerApp from './FieldOfficerApp.vue'
 import AdminApp from './AdminApp.vue'
+import pkg from '../package.json'
 
 export default {
   name: 'App',
   components: { CitizenApp, FieldOfficerApp, AdminApp },
   data() {
     return {
+      appVersion: pkg.version,
       mode: 'citizen',
       sharedTasks: [],
       newTaskCount: 0,
@@ -140,6 +143,16 @@ body { background: #f7f7f7; font-family: 'Kanit', 'Inter', sans-serif; }
   padding: 2px 8px;
   border-radius: 4px;
   letter-spacing: 1px;
+}
+.version-tag {
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.45);
+  border: 1px solid rgba(255,255,255,0.12);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
 }
 .switcher-tabs {
   display: flex;
@@ -251,6 +264,7 @@ body { background: #f7f7f7; font-family: 'Kanit', 'Inter', sans-serif; }
   .mode-switcher { padding: 0 16px; }
   .switcher-brand-name { display: none; }
   .demo-tag { display: none; }
+  .version-tag { display: none; }
 }
 @media (max-width: 480px) {
   .mode-switcher { height: 46px; padding: 0 10px; }
