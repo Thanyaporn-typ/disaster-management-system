@@ -292,20 +292,36 @@
 
           <div class="map-section">
             <!-- Risk zone list -->
-            <div class="zone-list">
-              <div class="card-head" style="padding:0 0 12px">รายการพื้นที่เสี่ยงภัย</div>
-              <div
-                v-for="zone in riskZones"
-                :key="zone.id"
-                :class="['zone-item', selectedZone === zone.id ? 'selected' : '']"
-                @click="selectedZone = zone.id"
-              >
-                <span class="zone-level-dot" :class="zone.level"></span>
-                <div class="zone-item-info">
-                  <div class="zone-name">{{ zone.name }}</div>
-                  <div class="zone-level-label">{{ zoneLevelText(zone.level) }}</div>
+            <div class="zone-list card">
+              <div class="zone-list-head">
+                <span class="card-head" style="margin:0">รายการพื้นที่เสี่ยงภัย</span>
+                <span class="zone-count">{{ filteredZones.length }}/{{ riskZones.length }}</span>
+              </div>
+              <!-- Filter chips -->
+              <div class="zone-filter-row">
+                <button
+                  v-for="f in [{k:'all',l:'ทั้งหมด'},{k:'high',l:'สูง'},{k:'medium',l:'กลาง'},{k:'low',l:'ต่ำ'}]"
+                  :key="f.k"
+                  :class="['zone-filter-chip', f.k, zoneFilter === f.k ? 'active' : '']"
+                  @click="zoneFilter = f.k"
+                >{{ f.l }}</button>
+              </div>
+              <!-- List -->
+              <div class="zone-items-wrap">
+                <div
+                  v-for="zone in filteredZones"
+                  :key="zone.id"
+                  :class="['zone-item', selectedZone === zone.id ? 'selected' : '']"
+                  @click="selectedZone = zone.id"
+                >
+                  <span class="zone-level-dot" :class="zone.level"></span>
+                  <div class="zone-item-info">
+                    <div class="zone-name">{{ zone.name }}</div>
+                    <div class="zone-level-label">{{ zoneLevelText(zone.level) }}</div>
+                  </div>
+                  <span :class="['zone-badge', zone.level]">{{ zoneLevelText(zone.level) }}</span>
                 </div>
-                <span :class="['zone-badge', zone.level]">{{ zoneLevelText(zone.level) }}</span>
+                <div v-if="filteredZones.length === 0" class="zone-empty">ไม่พบพื้นที่ในระดับนี้</div>
               </div>
             </div>
 
@@ -543,6 +559,10 @@
                     <span v-for="need in selectedIncident.needs" :key="need.key" class="mf-need-chip">{{ need.label }}</span>
                   </span>
                 </div>
+                <div class="mfield" v-if="selectedIncident.otherNeedText">
+                  <span class="mf-lbl">อื่นๆ (ระบุ)</span>
+                  <span class="mf-val">{{ selectedIncident.otherNeedText }}</span>
+                </div>
               </div>
               <div class="modal-info-sect">
                 <div class="modal-sect-title"><i class="bi bi-person-fill"></i> ข้อมูลผู้แจ้ง</div>
@@ -672,6 +692,7 @@ export default {
       savedSLA: false,
       showAddZone: false,
       selectedZone: null,
+      zoneFilter: 'all',
       newZone: { name: '', level: 'medium' },
       chartH: 90,
       chartPad: 12,
@@ -778,6 +799,10 @@ export default {
     slaRate() { return 87 },
     urgentIncidents() {
       return this.allIncidents.filter(i => i.urgency === 'high' && i.status !== 'done')
+    },
+    filteredZones() {
+      if (this.zoneFilter === 'all') return this.riskZones
+      return this.riskZones.filter(z => z.level === this.zoneFilter)
     },
     filteredIncidents() {
       return this.allIncidents
@@ -1187,9 +1212,46 @@ export default {
 }
 
 .map-section {
-  display: grid; grid-template-columns: 240px 1fr; gap: 16px; align-items: start;
+  display: grid; grid-template-columns: 260px 1fr; gap: 16px; align-items: start;
 }
-.zone-list { display: flex; flex-direction: column; gap: 8px; }
+.zone-list {
+  display: flex; flex-direction: column; gap: 0;
+  padding: 16px 14px 12px;
+}
+.zone-list-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px;
+}
+.zone-count {
+  font-size: 11px; font-weight: 600;
+  background: #f1f3f8; color: #888;
+  padding: 2px 8px; border-radius: 999px;
+}
+.zone-filter-row {
+  display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px;
+}
+.zone-filter-chip {
+  font-family: 'Kanit', 'Inter', sans-serif;
+  font-size: 12px; font-weight: 600;
+  padding: 4px 12px; border-radius: 999px;
+  border: 2px solid #e5e7eb;
+  background: #f8fafc; color: #888;
+  cursor: pointer; transition: all 0.15s;
+}
+.zone-filter-chip:hover { border-color: #cbd5e1; color: #555; }
+.zone-filter-chip.active.all   { background: #1e3a5f; border-color: #1e3a5f; color: #fff; }
+.zone-filter-chip.active.high  { background: #fee2e2; border-color: #ef4444; color: #dc2626; }
+.zone-filter-chip.active.medium{ background: #fef3c7; border-color: #f59e0b; color: #d97706; }
+.zone-filter-chip.active.low   { background: #dcfce7; border-color: #22c55e; color: #15803d; }
+.zone-items-wrap {
+  display: flex; flex-direction: column; gap: 8px;
+  max-height: 340px; overflow-y: auto;
+  padding-right: 2px;
+  scrollbar-width: thin;
+}
+.zone-empty {
+  text-align: center; color: #aaa; font-size: 13px; padding: 24px 0;
+}
 .zone-item {
   display: flex; align-items: center; gap: 10px;
   background: #fff; border-radius: 10px;
@@ -1381,12 +1443,15 @@ export default {
 
   /* Config */
   .config-row { flex-wrap: wrap; gap: 8px; }
+
+  /* Zone list — full width below map, limit height */
+  .zone-list { padding: 12px 12px 10px; }
+  .zone-items-wrap { max-height: 220px; }
 }
 
 @media (max-width: 720px) {
-  /* Zone list stacks under map */
-  .zone-list { flex-direction: row; flex-wrap: wrap; gap: 8px; }
-  .zone-item { flex: 1; min-width: 140px; }
+  .zone-items-wrap { max-height: 200px; }
+  .zone-item { padding: 10px 12px; }
   .risk-map { height: 320px; }
 }
 
@@ -1488,6 +1553,15 @@ export default {
   .charts-col { flex-direction: row; gap: 10px; }
   .chart-card { flex: 1; min-width: 0; }
   .donut-svg { width: 90px; height: 90px; }
+
+  /* Zone list — compact on mobile */
+  .zone-list { padding: 10px 10px 8px; }
+  .zone-items-wrap { max-height: 180px; }
+  .zone-item { padding: 8px 10px; gap: 7px; }
+  .zone-name { font-size: 12px; }
+  .zone-level-label { font-size: 11px; }
+  .zone-badge { display: none; }
+  .zone-filter-chip { font-size: 11px; padding: 3px 10px; }
 
   /* Map */
   .risk-map { height: 280px; }

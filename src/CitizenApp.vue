@@ -475,6 +475,10 @@
                 {{ need.label }}
               </span>
             </div>
+            <div class="modal-section-title mt-3">อื่นๆ</div>
+            <div v-if="selectedCase.otherNeedText" class="modal-other-need-text">
+              {{ selectedCase.otherNeedText }}
+            </div>
           </div>
 
           <div class="modal-section-title">ความคืบหน้า</div>
@@ -2508,6 +2512,16 @@ export default {
   font-weight: 700;
   padding: 4px 12px;
   border-radius: 999px;
+}
+
+.modal-other-need-text {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #555859;
+  /* background: #fdf6d8; */
+  /* border: 1.5px solid #f8d247; */
+  border-radius: 8px;
+  padding: 7px 12px;
 }
 
 .modal-result-sect { margin-top: 4px; }

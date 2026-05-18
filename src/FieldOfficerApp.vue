@@ -71,9 +71,12 @@
             <span class="task-info-icon"><i class="bi bi-geo-alt-fill"></i></span>
             <span class="task-info-text">สถานที่: {{ task.location }}</span>
           </div>
-          <div class="task-info-row">
+          <div class="task-info-row" style="align-items:flex-start">
             <span class="task-info-icon"><i class="bi bi-exclamation-circle-fill"></i></span>
-            <span class="task-info-text">ประเภท: {{ task.type }}</span>
+            <span v-if="task.needs && task.needs.length" class="tmodal-needs-chips" style="flex:1">
+              <span v-for="need in task.needs" :key="need.key" class="tmodal-need-chip">{{ need.label }}</span>
+            </span>
+            <span v-else class="task-info-text">ประเภท: {{ task.type }}</span>
           </div>
           <div class="task-card-actions">
             <button v-if="activeTaskTab === 'new'" class="btn-accept" @click.stop="acceptTask(task)"><i
@@ -111,9 +114,13 @@
             <span class="info-label">สถานที่</span>
             <span class="info-val">{{ selectedTask.location }}</span>
           </div>
-          <div class="info-row">
-            <span class="info-label">ประเภทเหตุ</span>
-            <span class="info-val">{{ selectedTask.type }}</span>
+          <div class="info-row" style="align-items:flex-start">
+            <span class="info-label">ความต้องการให้ช่วยเหลือ
+</span>
+            <span v-if="selectedTask.needs && selectedTask.needs.length" class="tmodal-needs-chips" style="justify-content:flex-end">
+              <span v-for="need in selectedTask.needs" :key="need.key" class="tmodal-need-chip">{{ need.label }}</span>
+            </span>
+            <span v-else class="info-val">{{ selectedTask.type }}</span>
           </div>
           <div class="info-row">
             <span class="info-label">ระดับความเร่งด่วน</span>
@@ -171,6 +178,13 @@
               <input type="checkbox" v-model="need.checked" />
               <span class="need-box" :class="{ checked: need.checked }">{{ need.label }}</span>
             </label>
+          </div>
+          <div v-if="needs.find(n => n.key === 'other')?.checked" class="other-need-wrap">
+            <input
+              class="other-need-input"
+              v-model="otherNeedText"
+              placeholder="ระบุความต้องการอื่นๆ..."
+            />
           </div>
         </div>
 
@@ -479,6 +493,7 @@ export default {
       contactPhone: '',
       checkinTime: '',
       closeTime: '',
+      otherNeedText: '',
       evidenceImage: null,
       lightboxImage: null,
       showTaskModal: false,
@@ -560,6 +575,7 @@ export default {
       this.contactName = task.contactName || ''
       this.contactPhone = task.contactPhone || ''
       this.needs.forEach(n => { n.checked = false })
+      this.otherNeedText = ''
       this.currentStep = 'detail'
     },
     startCheckin() {
@@ -591,6 +607,7 @@ export default {
         this.selectedTask.checkinTime = this.checkinTime
         this.selectedTask.closeTime = this.closeTime
         this.selectedTask.fieldUrgency = ['low', 'mid', 'high'][this.fieldUrgency]
+        this.selectedTask.otherNeedText = this.otherNeedText
       }
       this.currentStep = 'success'
     },
@@ -600,6 +617,7 @@ export default {
       this.evidenceImage = null
       this.completionNote = ''
       this.needs.forEach(n => n.checked = false)
+      this.otherNeedText = ''
     },
   },
 }
@@ -1734,6 +1752,26 @@ export default {
   border-color: #f8d247;
   background: #fdf6d8;
   color: #555859;
+}
+
+.other-need-wrap {
+  margin-top: 8px;
+}
+
+.other-need-input {
+  width: 100%;
+  border: 2px solid #f8d247;
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+
+.other-need-input:focus {
+  border-color: #e6b800;
 }
 
 /* ── People Counter ── */
