@@ -149,9 +149,25 @@
 
         <!-- Incident Image -->
         <div class="info-card">
-          <div class="info-card-head">📷 รูปภาพแจ้งเหตุ</div>
-          <div class="incident-img-area">
-            <div class="incident-img-placeholder">รูปภาพ</div>
+          <div class="info-card-head">
+            📷 รูปภาพแจ้งเหตุ
+            <span class="img-count-badge" v-if="selectedTask.images && selectedTask.images.length">
+              {{ selectedTask.images.length }}/4
+            </span>
+          </div>
+          <div v-if="selectedTask.images && selectedTask.images.length" class="incident-img-grid">
+            <div
+              v-for="(img, idx) in selectedTask.images"
+              :key="idx"
+              class="incident-thumb"
+              @click="lightboxImage = img"
+            >
+              <img :src="img" class="incident-thumb-img" :alt="'รูปภาพ ' + (idx + 1)" />
+              <div class="incident-thumb-overlay">🔍</div>
+            </div>
+          </div>
+          <div v-else class="incident-img-area">
+            <div class="incident-img-placeholder">ไม่มีรูปภาพแนบมา</div>
           </div>
         </div>
 
@@ -347,6 +363,14 @@
       </div>
     </div>
 
+    <!-- Lightbox -->
+    <transition name="fade">
+      <div class="lightbox" v-if="lightboxImage" @click="lightboxImage = null">
+        <button class="lightbox-close" @click="lightboxImage = null">✕</button>
+        <img :src="lightboxImage" class="lightbox-img" @click.stop alt="lightbox" />
+      </div>
+    </transition>
+
     <!-- Footer -->
     <footer class="officer-footer">
       <span>© 2568 ระบบเจ้าหน้าที่ภาคสนาม — กรมป้องกันและบรรเทาสาธารณภัย</span>
@@ -388,6 +412,7 @@ export default {
       checkinTime: '',
       closeTime: '',
       evidenceImage: null,
+      lightboxImage: null,
       completionNote: '',
       selectedOutcome: 'resolved',
 
@@ -425,6 +450,11 @@ export default {
           type: 'น้ำท่วม',
           urgency: 'high',
           status: 'new',
+          images: [
+            'https://picsum.photos/seed/flood1/600/400',
+            'https://picsum.photos/seed/flood2/600/400',
+            'https://picsum.photos/seed/flood3/600/400',
+          ],
         },
         {
           id: 'NO.1112',
@@ -433,6 +463,10 @@ export default {
           type: 'ไฟไหม้',
           urgency: 'high',
           status: 'new',
+          images: [
+            'https://picsum.photos/seed/fire1/600/400',
+            'https://picsum.photos/seed/fire2/600/400',
+          ],
         },
         {
           id: 'NO.1113',
@@ -441,6 +475,12 @@ export default {
           type: 'อุบัติเหตุ',
           urgency: 'mid',
           status: 'assigned',
+          images: [
+            'https://picsum.photos/seed/acc1/600/400',
+            'https://picsum.photos/seed/acc2/600/400',
+            'https://picsum.photos/seed/acc3/600/400',
+            'https://picsum.photos/seed/acc4/600/400',
+          ],
         },
         {
           id: 'NO.1110',
@@ -449,6 +489,9 @@ export default {
           type: 'น้ำท่วม',
           urgency: 'low',
           status: 'done',
+          images: [
+            'https://picsum.photos/seed/done1/600/400',
+          ],
         },
       ],
 
@@ -954,15 +997,97 @@ export default {
 }
 
 /* ── Incident Image ── */
+.img-count-badge {
+  margin-left: 8px;
+  background: #f0f2f8;
+  color: #555859;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+.incident-img-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+.incident-thumb {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  aspect-ratio: 4/3;
+  cursor: pointer;
+  background: #f0f2f8;
+}
+.incident-thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.25s;
+}
+.incident-thumb:hover .incident-thumb-img { transform: scale(1.05); }
+.incident-thumb-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.incident-thumb:hover .incident-thumb-overlay { opacity: 1; }
+
 .incident-img-area {
   background: #f7f7f7;
   border-radius: 10px;
-  height: 120px;
+  height: 100px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
-.incident-img-placeholder { color: #bbb; font-size: 15px; }
+.incident-img-placeholder { color: #bbb; font-size: 14px; }
+
+/* ── Lightbox ── */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.88);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.lightbox-img {
+  max-width: 100%;
+  max-height: 90vh;
+  border-radius: 12px;
+  object-fit: contain;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+}
+.lightbox-close {
+  position: absolute;
+  top: 16px; right: 20px;
+  background: rgba(255,255,255,0.15);
+  border: none;
+  border-radius: 50%;
+  width: 36px; height: 36px;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s;
+}
+.lightbox-close:hover { background: rgba(255,255,255,0.28); }
+.fade-enter-active { animation: fade-in 0.2s ease; }
+.fade-leave-active { animation: fade-in 0.15s ease reverse; }
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
 
 /* ── Urgency Slider ── */
 .urgency-slider-wrap { display: flex; flex-direction: column; gap: 10px; }

@@ -136,16 +136,11 @@
           <p class="how-subtitle">ง่าย รวดเร็ว และปลอดภัย — เพียง 4 ขั้นตอน</p>
 
           <div class="steps-grid">
-            <div class="step-card" v-for="(step, i) in steps" :key="step.num">
-              <div class="step-row">
-                <div class="step-bubble">{{ step.num }}</div>
-                <div class="step-line" v-if="i < steps.length - 1"></div>
-              </div>
-              <div class="step-body">
-                <div class="step-icon-box">{{ step.icon }}</div>
-                <div class="step-title">{{ step.title }}</div>
-                <div class="step-desc">{{ step.desc }}</div>
-              </div>
+            <div class="step-card" v-for="step in steps" :key="step.num">
+              <div class="step-num-badge">{{ step.num }}</div>
+              <div class="step-icon-box">{{ step.icon }}</div>
+              <div class="step-title">{{ step.title }}</div>
+              <div class="step-desc">{{ step.desc }}</div>
             </div>
           </div>
         </div>
@@ -845,10 +840,9 @@ export default {
   color: rgba(255,255,255,0.75);
 }
 
-/* Steps */
 /* ── How It Works ── */
 .how-section {
-  background: linear-gradient(135deg, #3d3f40 0%, #555859 60%, #6a6c6e 100%);
+  background: linear-gradient(160deg, #1e2124 0%, #2d3035 45%, #3d3f40 100%);
   padding: 0 !important;
   max-width: 100% !important;
   position: relative;
@@ -857,100 +851,114 @@ export default {
 .how-section::before {
   content: '';
   position: absolute; inset: 0;
-  background-image: radial-gradient(rgba(248,210,71,0.06) 1px, transparent 1px);
-  background-size: 32px 32px;
+  background-image: radial-gradient(rgba(248,210,71,0.07) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none;
+}
+.how-section::after {
+  content: '';
+  position: absolute;
+  top: -160px; right: -160px;
+  width: 440px; height: 440px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(248,210,71,0.08) 0%, transparent 65%);
   pointer-events: none;
 }
 .how-inner {
-  max-width: 1100px;
+  max-width: 1140px;
   margin: 0 auto;
-  padding: 72px 32px;
+  padding: 80px 32px;
   text-align: center;
   position: relative;
 }
 .how-eyebrow {
   display: inline-block;
-  background: rgba(248,210,71,0.15);
+  background: rgba(248,210,71,0.12);
   color: #f8d247;
-  border: 1px solid rgba(248,210,71,0.3);
+  border: 1px solid rgba(248,210,71,0.25);
   border-radius: 999px;
-  padding: 5px 18px;
-  font-size: 12px;
+  padding: 6px 20px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 1.5px;
+  letter-spacing: 2px;
   text-transform: uppercase;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 .how-title {
-  font-size: 36px;
+  font-size: 40px;
   font-weight: 800;
   color: #fff;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   line-height: 1.2;
 }
 .how-subtitle {
   font-size: 15px;
-  color: rgba(255,255,255,0.5);
-  margin-bottom: 56px;
+  color: rgba(255,255,255,0.45);
+  margin-bottom: 60px;
 }
 
 .steps-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 0;
+  gap: 16px;
 }
 
 .step-card {
-  padding: 0 16px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
+  padding: 36px 20px 32px;
   text-align: center;
   position: relative;
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.step-card:hover {
+  transform: translateY(-10px);
+  background: rgba(248,210,71,0.07);
+  border-color: rgba(248,210,71,0.3);
+  box-shadow: 0 24px 64px rgba(248,210,71,0.12), inset 0 0 0 1px rgba(248,210,71,0.15);
+}
+.step-card:not(:last-child)::after {
+  content: '→';
+  position: absolute;
+  right: -22px;
+  top: 38%;
+  transform: translateY(-50%);
+  font-size: 20px;
+  color: rgba(248,210,71,0.4);
+  z-index: 2;
+  pointer-events: none;
 }
 
-.step-row {
-  display: flex;
+.step-num-badge {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 28px;
-}
-
-.step-bubble {
-  width: 52px; height: 52px;
+  width: 34px; height: 34px;
   border-radius: 50%;
   background: #f8d247;
-  color: #555859;
-  font-size: 18px;
+  color: #1e2124;
+  font-size: 13px;
   font-weight: 800;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-  box-shadow: 0 0 0 6px rgba(248,210,71,0.15), 0 0 0 12px rgba(248,210,71,0.06);
-  position: relative;
-  z-index: 1;
-}
-
-.step-line {
-  flex: 1;
-  height: 2px;
-  background: linear-gradient(90deg, rgba(248,210,71,0.6), rgba(248,210,71,0.2));
-  margin-left: 4px;
+  margin-bottom: 20px;
+  box-shadow: 0 0 0 5px rgba(248,210,71,0.18), 0 0 0 10px rgba(248,210,71,0.07);
 }
 
 .step-icon-box {
-  width: 72px; height: 72px;
-  border-radius: 20px;
-  background: rgba(255,255,255,0.07);
-  border: 1px solid rgba(255,255,255,0.1);
+  width: 76px; height: 76px;
+  border-radius: 22px;
+  background: rgba(255,255,255,0.06);
+  border: 1.5px solid rgba(255,255,255,0.1);
   display: flex; align-items: center; justify-content: center;
-  font-size: 32px;
-  margin: 0 auto 18px;
-  backdrop-filter: blur(8px);
+  font-size: 34px;
+  margin: 0 auto 20px;
   transition: all 0.3s;
 }
-
 .step-card:hover .step-icon-box {
   background: rgba(248,210,71,0.15);
   border-color: rgba(248,210,71,0.4);
-  transform: translateY(-4px);
-  box-shadow: 0 12px 32px rgba(248,210,71,0.15);
+  transform: scale(1.08) rotate(-4deg);
+  box-shadow: 0 12px 32px rgba(248,210,71,0.12);
 }
 
 .step-title {
@@ -2013,8 +2021,8 @@ export default {
   .hero-title { font-size: 40px; }
   .banner-section { padding: 48px 20px; }
   .banner-grid { grid-template-columns: repeat(2, 1fr); }
-  .steps-grid { grid-template-columns: repeat(2, 1fr); }
-  .step-line { display: none; }
+  .steps-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .step-card:nth-child(2n):not(:last-child)::after { display: none; }
   .how-inner { padding: 56px 20px; }
   .how-title { font-size: 28px; }
   .how-subtitle { font-size: 14px; }
@@ -2066,61 +2074,16 @@ export default {
   .banner-title { font-size: 15px; }
   .banner-desc { font-size: 12px; }
 
-  /* Steps / How — timeline layout */
-  .how-inner { padding: 36px 20px 28px; }
+  /* Steps / How */
+  .how-inner { padding: 36px 16px 28px; }
   .how-title { font-size: 22px; }
   .how-subtitle { font-size: 12px; margin-bottom: 32px; }
-
-  .steps-grid {
-    grid-template-columns: 1fr;
-    gap: 0;
-  }
-  .step-card {
-    display: flex;
-    flex-direction: row;
-    align-items: stretch;
-    text-align: left;
-    padding: 0;
-    gap: 16px;
-  }
-  .step-row {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    margin-bottom: 0;
-    flex-shrink: 0;
-    padding-top: 2px;
-  }
-  .step-bubble {
-    width: 44px; height: 44px;
-    font-size: 15px;
-    flex-shrink: 0;
-  }
-  .step-line {
-    display: block;
-    flex: 1;
-    width: 2px;
-    height: auto;
-    min-height: 24px;
-    background: linear-gradient(180deg, rgba(248,210,71,0.5), rgba(248,210,71,0.08));
-    margin-left: 0;
-    margin-top: 6px;
-    border-radius: 1px;
-  }
-  .step-body {
-    flex: 1;
-    padding-bottom: 28px;
-    padding-top: 4px;
-  }
-  .step-card:last-child .step-body { padding-bottom: 8px; }
-  .step-icon-box {
-    width: 52px; height: 52px;
-    font-size: 24px;
-    border-radius: 14px;
-    margin: 0 0 10px 0;
-  }
-  .step-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .steps-grid { grid-template-columns: 1fr; gap: 10px; }
+  .step-card { padding: 24px 20px 20px; border-radius: 16px; }
+  .step-card:not(:last-child)::after { display: none; }
+  .step-num-badge { margin-bottom: 14px; }
+  .step-icon-box { width: 60px; height: 60px; font-size: 26px; border-radius: 16px; margin-bottom: 14px; }
+  .step-title { font-size: 15px; margin-bottom: 6px; }
   .step-desc { font-size: 12px; line-height: 1.6; }
 
   /* CTA */
