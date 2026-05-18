@@ -3,7 +3,9 @@ const { defineConfig } = require('@vue/cli-service')
 module.exports = defineConfig({
   transpileDependencies: true,
 
-  publicPath: '/disaster-management-system/',
+  // publicPath: '/disaster-management-system/',
+  publicPath: '/',
+
 
   pages: {
     index: {

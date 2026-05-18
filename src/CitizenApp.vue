@@ -5,7 +5,7 @@
     <nav class="navbar">
       <div class="navbar-inner">
         <div class="nav-logo" @click="currentView = 'landing'">
-          <div class="logo-icon">🛡️</div>
+          <div class="logo-icon"><i class="bi bi-shield-fill"></i></div>
           <span class="logo-text">ระบบแจ้งเหตุภัยพิบัติ</span>
         </div>
         <div class="nav-links">
@@ -36,7 +36,7 @@
       <!-- Mobile Drawer -->
       <div class="mobile-drawer" v-if="mobileMenuOpen">
         <div class="drawer-user">
-          <div class="drawer-user-avatar">👤</div>
+          <div class="drawer-user-avatar"><i class="bi bi-person-fill"></i></div>
           <div class="drawer-user-info">
             <div class="drawer-user-role">ประชาชน</div>
             <div class="drawer-user-status">ออนไลน์</div>
@@ -49,7 +49,7 @@
             :class="['drawer-link', currentView === v.key ? 'active' : '']"
             @click="currentView = v.key; mobileMenuOpen = false"
           >
-            <span class="drawer-link-icon">{{ v.icon }}</span>
+            <span class="drawer-link-icon"><i :class="['bi', v.icon]"></i></span>
             <span class="drawer-link-body">
               <span class="drawer-link-label">{{ v.label }}</span>
               <span class="drawer-link-desc">{{ v.desc }}</span>
@@ -59,7 +59,7 @@
         </div>
         <div class="drawer-footer">
           <button class="drawer-report-btn" @click="currentView = 'form'; mobileMenuOpen = false">
-            <span>🚨</span> แจ้งเหตุด่วน
+            <i class="bi bi-exclamation-octagon-fill"></i> แจ้งเหตุด่วน
           </button>
         </div>
       </div>
@@ -138,7 +138,7 @@
           <div class="steps-grid">
             <div class="step-card" v-for="step in steps" :key="step.num">
               <div class="step-num-badge">{{ step.num }}</div>
-              <div class="step-icon-box">{{ step.icon }}</div>
+              <div class="step-icon-box"><i :class="['bi', step.icon]"></i></div>
               <div class="step-title">{{ step.title }}</div>
               <div class="step-desc">{{ step.desc }}</div>
             </div>
@@ -160,7 +160,7 @@
     <div v-if="currentView === 'form'" class="page-form">
       <div class="page-header">
         <div class="page-header-inner">
-          <button class="back-btn" @click="currentView = 'landing'">กลับ</button>
+          <button class="back-btn" @click="currentView = 'landing'"><i class="bi bi-arrow-left"></i> กลับ</button>
           <h1 class="page-title">กรอกข้อมูลเหตุการณ์</h1>
           <div></div>
         </div>
@@ -170,11 +170,11 @@
         <!-- Left: Map -->
         <div class="form-left">
           <div class="card">
-            <div class="card-head">📍 ตำแหน่งที่เกิดเหตุ</div>
+            <div class="card-head"><i class="bi bi-geo-alt-fill"></i> ตำแหน่งที่เกิดเหตุ</div>
             <div class="map-area">
               <div class="map-mock">
                 <div class="map-roads"></div>
-                <div class="map-pin-web">📍</div>
+                <div class="map-pin-web"><i class="bi bi-geo-alt-fill"></i></div>
                 <div class="map-search">
                   <input type="text" v-model="form.location" placeholder="ค้นหาสถานที่..." class="map-search-input" />
                 </div>
@@ -190,7 +190,7 @@
 
           <!-- Image Upload -->
           <div class="card mt-card">
-            <div class="card-head">📷 รูปภาพเหตุการณ์ <span class="upload-count">{{ previewImages.length }}/4</span></div>
+            <div class="card-head"><i class="bi bi-camera-fill"></i> รูปภาพเหตุการณ์ <span class="upload-count">{{ previewImages.length }}/4</span></div>
             <div class="upload-grid">
               <div
                 v-for="(img, idx) in previewImages"
@@ -198,7 +198,7 @@
                 class="upload-thumb"
               >
                 <img :src="img" class="upload-thumb-img" alt="preview" />
-                <button class="upload-thumb-del" @click.stop="removeImage(idx)">✕</button>
+                <button class="upload-thumb-del" @click.stop="removeImage(idx)"><i class="bi bi-x"></i></button>
               </div>
               <div
                 v-if="previewImages.length < 4"
@@ -217,7 +217,7 @@
         <!-- Right: Form Fields -->
         <div class="form-right">
           <div class="card">
-            <div class="card-head">📋 รายละเอียดเหตุการณ์</div>
+            <div class="card-head"><i class="bi bi-clipboard2-fill"></i> รายละเอียดเหตุการณ์</div>
 
             <!-- Urgency -->
             <div class="field-group">
@@ -228,7 +228,7 @@
                   :key="i"
                   :class="['urgency-chip', urgency == i ? 'active-' + u.key : '']"
                   @click="urgency = i"
-                >{{ u.label }}</button>
+                ><i :class="['bi', u.icon]" :style="{ color: u.iconColor }"></i> {{ u.label }}</button>
               </div>
             </div>
 
@@ -239,7 +239,7 @@
                 <label class="need-chip" v-for="need in needs" :key="need.key">
                   <input type="checkbox" v-model="need.checked" hidden />
                   <span :class="['chip-inner', need.checked ? 'checked' : '']">
-                    {{ need.icon }} {{ need.label }}
+                    <i :class="['bi', need.icon]"></i> {{ need.label }}
                   </span>
                 </label>
               </div>
@@ -267,7 +267,7 @@
 
           <!-- Contact Card -->
           <div class="card mt-card">
-            <div class="card-head">📞 ข้อมูลผู้แจ้ง</div>
+            <div class="card-head"><i class="bi bi-telephone-fill"></i> ข้อมูลผู้แจ้ง</div>
 
             <button class="btn-thaid-web">
               <img src="./assets/thai-id.webp" class="thaid-badge" alt="ThaiD" />
@@ -288,7 +288,7 @@
             </div>
 
             <button class="btn-submit-web" @click="submitForm">
-               ยืนยันและส่งข้อมูล
+              <i class="bi bi-send-fill"></i> ยืนยันและส่งข้อมูล
             </button>
           </div>
         </div>
@@ -299,7 +299,7 @@
     <div v-if="currentView === 'confirm'" class="page-confirm">
       <div class="confirm-wrap">
         <div class="confirm-icon-wrap">
-          <div class="confirm-icon">✅</div>
+          <div class="confirm-icon"><i class="bi bi-check-circle-fill"></i></div>
         </div>
         <h1 class="confirm-title">ส่งข้อมูลสำเร็จ!</h1>
         <p class="confirm-sub">นำส่งข้อมูลให้เจ้าหน้าที่เรียบร้อยแล้ว<br />โปรดรอเจ้าหน้าที่แจ้งอัปเดตให้ทราบอีกครั้ง</p>
@@ -350,9 +350,9 @@
     <div v-if="currentView === 'tracking'" class="page-tracking">
       <div class="page-header">
         <div class="page-header-inner">
-          <button class="back-btn" @click="currentView = 'landing'">← กลับ</button>
+          <button class="back-btn" @click="currentView = 'landing'"><i class="bi bi-arrow-left"></i> กลับ</button>
           <h1 class="page-title">ประวัติการแจ้งเหตุ</h1>
-          <button class="btn-new" @click="currentView = 'form'">+ แจ้งเหตุใหม่</button>
+          <button class="btn-new" @click="currentView = 'form'"><i class="bi bi-plus-lg"></i> แจ้งเหตุใหม่</button>
         </div>
       </div>
 
@@ -401,14 +401,14 @@
                   </span>
                 </td>
                 <td data-label="">
-                  <button class="btn-detail">ดูรายละเอียด</button>
+                  <button class="btn-detail" @click="openDetail(c)">ดูรายละเอียด</button>
                 </td>
               </tr>
             </tbody>
           </table>
 
           <div v-if="filteredCases.length === 0" class="empty-state">
-            <div class="empty-icon">📭</div>
+            <div class="empty-icon"><i class="bi bi-inbox"></i></div>
             <div class="empty-text">ไม่มีรายการในหมวดนี้</div>
           </div>
         </div>
@@ -427,6 +427,77 @@
             </div>
             <span class="progress-count">{{ cases.filter(c => c.status === tab.key).length }}</span>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ DETAIL MODAL ══════════ -->
+    <div v-if="showDetailModal && selectedCase" class="modal-overlay" @click.self="showDetailModal = false">
+      <div class="modal-box">
+        <div class="modal-header">
+          <div>
+            <div class="modal-case-id">{{ selectedCase.id }}</div>
+            <h2 class="modal-title">รายละเอียดเคส</h2>
+          </div>
+          <button class="modal-close" @click="showDetailModal = false"><i class="bi bi-x-lg"></i></button>
+        </div>
+
+        <div class="modal-body">
+          <div class="modal-info-grid">
+            <div class="modal-info-item">
+              <div class="modal-info-label"><i class="bi bi-calendar3"></i> วันที่แจ้ง</div>
+              <div class="modal-info-val">{{ selectedCase.date }}</div>
+            </div>
+            <div class="modal-info-item">
+              <div class="modal-info-label"><i class="bi bi-geo-alt-fill"></i> สถานที่เกิดเหตุ</div>
+              <div class="modal-info-val">{{ selectedCase.location }}</div>
+            </div>
+            <div class="modal-info-item">
+              <div class="modal-info-label"><i class="bi bi-exclamation-circle-fill"></i> ความเร่งด่วน</div>
+              <div class="modal-info-val">
+                <span :class="['urgency-badge', selectedCase.urgency]">{{ urgencyText(selectedCase.urgency) }}</span>
+              </div>
+            </div>
+            <div class="modal-info-item">
+              <div class="modal-info-label"><i class="bi bi-flag-fill"></i> สถานะ</div>
+              <div class="modal-info-val">
+                <span :class="['status-pill', selectedCase.status]">
+                  <span class="pill-dot"></span>{{ statusLabel(selectedCase.status) }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-section-title">ความคืบหน้า</div>
+          <div class="modal-timeline">
+            <div class="modal-tl-item">
+              <div class="modal-tl-dot done"></div>
+              <div class="modal-tl-line" :class="{ done: selectedCase.status === 'processing' || selectedCase.status === 'done' }"></div>
+              <div class="modal-tl-content">
+                <div class="modal-tl-label done">รับเรื่อง</div>
+                <div class="modal-tl-time">{{ selectedCase.date }}</div>
+              </div>
+            </div>
+            <div class="modal-tl-item">
+              <div class="modal-tl-dot" :class="{ done: selectedCase.status === 'processing' || selectedCase.status === 'done' }"></div>
+              <div class="modal-tl-line" :class="{ done: selectedCase.status === 'done' }"></div>
+              <div class="modal-tl-content">
+                <div class="modal-tl-label" :class="{ done: selectedCase.status === 'processing' || selectedCase.status === 'done' }">กำลังดำเนินการ</div>
+                <div class="modal-tl-time">{{ selectedCase.status === 'processing' || selectedCase.status === 'done' ? 'อยู่ระหว่างดำเนินการ' : 'รอดำเนินการ' }}</div>
+              </div>
+            </div>
+            <div class="modal-tl-item last">
+              <div class="modal-tl-dot" :class="{ done: selectedCase.status === 'done' }"></div>
+              <div class="modal-tl-content">
+                <div class="modal-tl-label" :class="{ done: selectedCase.status === 'done' }">เสร็จสิ้น</div>
+                <div class="modal-tl-time">{{ selectedCase.status === 'done' ? 'ดำเนินการเสร็จสิ้นแล้ว' : 'รอดำเนินการ' }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="modal-close-btn" @click="showDetailModal = false">ปิด</button>
         </div>
       </div>
     </div>
@@ -450,6 +521,8 @@ export default {
     return {
       currentView: 'landing',
       mobileMenuOpen: false,
+      showDetailModal: false,
+      selectedCase: null,
       urgency: 1,
       peopleCount: 0,
       previewImages: [],
@@ -457,17 +530,17 @@ export default {
       caseNumber: '1111',
       activeTab: 'all',
       urgencyLevels: [
-        { key: 'low', label: '🟢 น้อย' },
-        { key: 'mid', label: '🟡 ปานกลาง' },
-        { key: 'high', label: '🔴 ด่วนมาก' },
+        { key: 'low', label: 'น้อย', icon: 'bi-circle-fill', iconColor: '#22c55e' },
+        { key: 'mid', label: 'ปานกลาง', icon: 'bi-circle-fill', iconColor: '#f59e0b' },
+        { key: 'high', label: 'ด่วนมาก', icon: 'bi-circle-fill', iconColor: '#ef4444' },
       ],
       needs: [
-        { key: 'food', label: 'อาหาร', icon: '🍱', checked: false },
-        { key: 'medical', label: 'แพทย์', icon: '🏥', checked: false },
-        { key: 'clothes', label: 'เสื้อผ้า', icon: '👕', checked: false },
-        { key: 'rescue', label: 'กู้ภัย', icon: '🚒', checked: false },
-        { key: 'shelter', label: 'ที่พักพิง', icon: '🏠', checked: false },
-        { key: 'other', label: 'อื่นๆ', icon: '📦', checked: false },
+        { key: 'food', label: 'อาหาร', icon: 'bi-basket-fill', checked: false },
+        { key: 'medical', label: 'แพทย์', icon: 'bi-hospital-fill', checked: false },
+        { key: 'clothes', label: 'เสื้อผ้า', icon: 'bi-bag-fill', checked: false },
+        { key: 'rescue', label: 'กู้ภัย', icon: 'bi-truck-front-fill', checked: false },
+        { key: 'shelter', label: 'ที่พักพิง', icon: 'bi-house-fill', checked: false },
+        { key: 'other', label: 'อื่นๆ', icon: 'bi-box-seam-fill', checked: false },
       ],
       tabs: [
         { key: 'received', label: 'รับเรื่อง' },
@@ -481,15 +554,15 @@ export default {
         { id: 'NO.1032', date: '10/12/2568', location: 'ชุมชนริมคลอง', urgency: 'high', status: 'done' },
       ],
       steps: [
-        { num: '01', icon: '📝', title: 'กรอกข้อมูล', desc: 'ระบุตำแหน่ง ประเภทเหตุ และความต้องการ' },
-        { num: '02', icon: '📤', title: 'ส่งข้อมูล', desc: 'ส่งข้อมูลถึงเจ้าหน้าที่ในพื้นที่ทันที' },
-        { num: '03', icon: '🔔', title: 'รับการแจ้งเตือน', desc: 'ติดตามสถานะผ่านหมายเลขเคส' },
-        { num: '04', icon: '🤝', title: 'ได้รับความช่วยเหลือ', desc: 'หน่วยงานเข้าให้ความช่วยเหลือ' },
+        { num: '01', icon: 'bi-pencil-fill', title: 'กรอกข้อมูล', desc: 'ระบุตำแหน่ง ประเภทเหตุ และความต้องการ' },
+        { num: '02', icon: 'bi-send-fill', title: 'ส่งข้อมูล', desc: 'ส่งข้อมูลถึงเจ้าหน้าที่ในพื้นที่ทันที' },
+        { num: '03', icon: 'bi-bell-fill', title: 'รับการแจ้งเตือน', desc: 'ติดตามสถานะผ่านหมายเลขเคส' },
+        { num: '04', icon: 'bi-people-fill', title: 'ได้รับความช่วยเหลือ', desc: 'หน่วยงานเข้าให้ความช่วยเหลือ' },
       ],
       views: [
-        { key: 'landing', label: 'หน้าหลัก', icon: '🏠', desc: 'หน้าแรกและข่าวสาร' },
-        { key: 'form', label: 'แจ้งเหตุ', icon: '📝', desc: 'กรอกข้อมูลเหตุการณ์' },
-        { key: 'tracking', label: 'ติดตามเคส', icon: '🔍', desc: 'ดูสถานะการช่วยเหลือ' },
+        { key: 'landing', label: 'หน้าหลัก', icon: 'bi-house-door-fill', desc: 'หน้าแรกและข่าวสาร' },
+        { key: 'form', label: 'แจ้งเหตุ', icon: 'bi-pencil-fill', desc: 'กรอกข้อมูลเหตุการณ์' },
+        { key: 'tracking', label: 'ติดตามเคส', icon: 'bi-search', desc: 'ดูสถานะการช่วยเหลือ' },
       ],
     }
   },
@@ -539,6 +612,10 @@ export default {
       })
       this.$emit('report-submitted', report)
       this.currentView = 'confirm'
+    },
+    openDetail(c) {
+      this.selectedCase = c
+      this.showDetailModal = true
     },
     statusLabel(s) {
       return { received: 'รับเรื่อง', processing: 'กำลังดำเนินการ', done: 'เสร็จสิ้น' }[s]
@@ -947,7 +1024,7 @@ export default {
 .step-icon-box {
   width: 76px; height: 76px;
   border-radius: 22px;
-  background: rgba(255,255,255,0.06);
+  background: rgb(255, 255, 255);
   border: 1.5px solid rgba(255,255,255,0.1);
   display: flex; align-items: center; justify-content: center;
   font-size: 34px;
@@ -955,7 +1032,7 @@ export default {
   transition: all 0.3s;
 }
 .step-card:hover .step-icon-box {
-  background: rgba(248,210,71,0.15);
+  background: rgba(248, 210, 71, 0.696);
   border-color: rgba(248,210,71,0.4);
   transform: scale(1.08) rotate(-4deg);
   box-shadow: 0 12px 32px rgba(248,210,71,0.12);
@@ -1472,6 +1549,7 @@ export default {
 .confirm-icon {
   font-size: 72px;
   line-height: 1;
+  color: #22c55e;
 }
 
 .confirm-title {
@@ -2177,5 +2255,215 @@ export default {
   .site-footer { padding: 16px; }
   .footer-inner { flex-direction: column; gap: 4px; text-align: center; }
   .footer-sep { display: none; }
+}
+
+/* ══ Detail Modal ══ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 500;
+  padding: 20px;
+}
+
+.modal-box {
+  background: #fff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 520px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  animation: modal-in 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 24px 24px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  background: #f8f9fc;
+}
+
+.modal-case-id {
+  font-size: 12px;
+  font-weight: 700;
+  color: #f8d247;
+  background: #555859;
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  letter-spacing: 0.5px;
+}
+
+.modal-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #555859;
+  margin: 0;
+}
+
+.modal-close {
+  background: none;
+  border: 1.5px solid #e8e8e8;
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  color: #888;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+
+.modal-close:hover { border-color: #ccc; color: #333; background: #f5f5f5; }
+
+.modal-body { padding: 24px; }
+
+.modal-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.modal-info-item {
+  background: #f8f9fc;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.modal-info-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.modal-info-val {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.modal-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 16px;
+}
+
+.modal-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.modal-tl-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  position: relative;
+}
+
+.modal-tl-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2.5px solid #e8e8e8;
+  background: #fff;
+  flex-shrink: 0;
+  margin-top: 2px;
+  transition: all 0.3s;
+  z-index: 1;
+}
+
+.modal-tl-dot.done {
+  background: #22c55e;
+  border-color: #22c55e;
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.15);
+}
+
+.modal-tl-line {
+  position: absolute;
+  left: 8px;
+  top: 20px;
+  width: 2px;
+  height: 36px;
+  background: #e8e8e8;
+  transition: background 0.3s;
+}
+
+.modal-tl-line.done { background: #22c55e; }
+
+.modal-tl-content {
+  padding-bottom: 28px;
+}
+
+.modal-tl-item.last .modal-tl-content { padding-bottom: 0; }
+
+.modal-tl-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #aaa;
+  margin-bottom: 2px;
+}
+
+.modal-tl-label.done { color: #22c55e; }
+
+.modal-tl-time {
+  font-size: 12px;
+  color: #bbb;
+}
+
+.modal-footer {
+  padding: 16px 24px 24px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.modal-close-btn {
+  padding: 10px 28px;
+  background: #555859;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.2s;
+}
+
+.modal-close-btn:hover { opacity: 0.85; }
+
+@media (max-width: 640px) {
+  .modal-overlay { padding: 12px; align-items: flex-end; }
+  .modal-box { border-radius: 20px 20px 0 0; max-width: 100%; }
+  .modal-info-grid { grid-template-columns: 1fr; gap: 10px; }
+  .modal-header { padding: 18px 18px 14px; }
+  .modal-body { padding: 18px; }
+  .modal-footer { padding: 12px 18px 20px; }
 }
 </style>

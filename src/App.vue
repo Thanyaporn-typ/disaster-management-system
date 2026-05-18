@@ -4,7 +4,7 @@
     <!-- ══ Incoming Alert Toast ══ -->
     <transition name="toast">
       <div class="alert-toast" v-if="toast">
-        <div class="toast-icon">🚨</div>
+        <div class="toast-icon"><i class="bi bi-exclamation-octagon-fill"></i></div>
         <div class="toast-body">
           <div class="toast-title">แจ้งเหตุใหม่เข้ามา!</div>
           <div class="toast-sub">{{ toast.id }} — {{ toast.location }}</div>
@@ -12,14 +12,14 @@
         <button class="toast-action" @click="switchToOfficer">
           ดูที่เจ้าหน้าที่ →
         </button>
-        <button class="toast-close" @click="toast = null">✕</button>
+        <button class="toast-close" @click="toast = null"><i class="bi bi-x-lg"></i></button>
       </div>
     </transition>
 
     <!-- ══ Mode Switcher ══ -->
     <div class="mode-switcher">
       <div class="switcher-brand">
-        <span class="switcher-brand-icon">🛡️</span>
+        <!-- <span class="switcher-brand-icon"><i class="bi bi-shield-fill"></i></span> -->
         <span class="switcher-brand-name">ระบบบริหารจัดการภัยพิบัติ</span>
         <span class="demo-tag">DEMO</span>
       </div>
@@ -28,14 +28,14 @@
           :class="['mode-btn', mode === 'citizen' ? 'active' : '']"
           @click="mode = 'citizen'"
         >
-          <span class="mode-btn-icon">👤</span>
+          <span class="mode-btn-icon"><i class="bi bi-person-fill"></i></span>
           <span class="mode-btn-label">ประชาชน</span>
         </button>
         <button
           :class="['mode-btn', mode === 'officer' ? 'active' : '']"
           @click="mode = 'officer'; newTaskCount = 0"
         >
-          <span class="mode-btn-icon">🦺</span>
+          <span class="mode-btn-icon"><i class="bi bi-person-badge-fill"></i></span>
           <span class="mode-btn-label">เจ้าหน้าที่</span>
           <span class="notif-badge" v-if="newTaskCount > 0">{{ newTaskCount }}</span>
         </button>
@@ -43,7 +43,7 @@
           :class="['mode-btn', mode === 'admin' ? 'active' : '']"
           @click="mode = 'admin'; newTaskCount = 0"
         >
-          <span class="mode-btn-icon">⚙️</span>
+          <span class="mode-btn-icon"><i class="bi bi-gear-fill"></i></span>
           <span class="mode-btn-label">ผู้ดูแลระบบ</span>
           <span class="notif-badge" v-if="mode !== 'admin' && newTaskCount > 0">{{ newTaskCount }}</span>
         </button>

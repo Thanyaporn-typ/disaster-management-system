@@ -4,13 +4,13 @@
     <!-- ══════════ NAVBAR ══════════ -->
     <nav class="officer-navbar">
       <div class="on-logo">
-        <div class="on-logo-icon">🦺</div>
+        <div class="on-logo-icon"><i class="bi bi-person-badge-fill"></i></div>
         <span class="on-logo-text">ระบบเจ้าหน้าที่ภาคสนาม</span>
       </div>
       <div class="on-user">
         <div class="on-avatar">ส</div>
         <div class="on-user-info">
-          <div class="on-user-name">สิบตรีสมชาย</div>
+          <div class="on-user-name">นายสมชาย</div>
           <div class="on-user-role">เจ้าหน้าที่ภาคสนาม</div>
         </div>
       </div>
@@ -24,7 +24,7 @@
         :class="['wf-step', currentStep === step.key ? 'active' : stepIndex > i ? 'done' : '']"
       >
         <div class="wf-circle">
-          <span v-if="stepIndex > i">✓</span>
+          <span v-if="stepIndex > i"><i class="bi bi-check-lg"></i></span>
           <span v-else>{{ i + 1 }}</span>
         </div>
         <div class="wf-label">{{ step.label }}</div>
@@ -57,7 +57,7 @@
       <transition name="alert-slide">
         <div class="new-report-banner" v-if="newAlertCount > 0 && activeTaskTab !== 'new'">
           <span class="banner-pulse"></span>
-          <span class="banner-msg">🚨 มีเหตุการณ์ใหม่ {{ newAlertCount }} รายการ เข้ามา!</span>
+          <span class="banner-msg"><i class="bi bi-exclamation-octagon-fill"></i> มีเหตุการณ์ใหม่ {{ newAlertCount }} รายการ เข้ามา!</span>
           <button class="banner-btn" @click="activeTaskTab = 'new'; newAlertCount = 0">ดูเลย →</button>
         </div>
       </transition>
@@ -68,40 +68,41 @@
           :key="task.id"
           class="task-card"
           :class="task.urgency"
+          @click="openTaskModal(task)"
         >
           <div class="task-card-top">
             <div class="task-id">{{ task.id }}</div>
             <span class="urgency-tag" :class="task.urgency">{{ urgencyLabel(task.urgency) }}</span>
           </div>
           <div class="task-info-row">
-            <span class="task-info-icon">📅</span>
+            <span class="task-info-icon"><i class="bi bi-calendar3"></i></span>
             <span class="task-info-text">วันเวลาแจ้งเหตุ: {{ task.date }}</span>
           </div>
           <div class="task-info-row">
-            <span class="task-info-icon">📍</span>
+            <span class="task-info-icon"><i class="bi bi-geo-alt-fill"></i></span>
             <span class="task-info-text">สถานที่: {{ task.location }}</span>
           </div>
           <div class="task-info-row">
-            <span class="task-info-icon">🆘</span>
+            <span class="task-info-icon"><i class="bi bi-exclamation-circle-fill"></i></span>
             <span class="task-info-text">ประเภท: {{ task.type }}</span>
           </div>
           <div class="task-card-actions">
             <button
               v-if="activeTaskTab === 'new'"
               class="btn-accept"
-              @click="acceptTask(task)"
-            >✔ รับเรื่อง</button>
+              @click.stop="acceptTask(task)"
+            ><i class="bi bi-check-lg"></i> รับเรื่อง</button>
             <button
               v-else-if="activeTaskTab === 'assigned'"
               class="btn-continue"
-              @click="continueTask(task)"
-            >▶ เริ่มดำเนินการ</button>
-            <span v-else class="task-done-badge">✅ เสร็จสิ้น</span>
+              @click.stop="continueTask(task)"
+            ><i class="bi bi-play-fill"></i> เริ่มดำเนินการ</button>
+            <span v-else class="task-done-badge"><i class="bi bi-check-circle-fill"></i> เสร็จสิ้น</span>
           </div>
         </div>
 
         <div v-if="tasksByTab(activeTaskTab).length === 0" class="empty-tasks">
-          <div class="empty-icon">📭</div>
+          <div class="empty-icon"><i class="bi bi-inbox"></i></div>
           <div class="empty-text">ไม่มีภารกิจในหมวดนี้</div>
         </div>
       </div>
@@ -110,7 +111,7 @@
     <!-- ══════════ STEP 2: INCIDENT DETAIL & INSPECTION ══════════ -->
     <div v-if="currentStep === 'detail'" class="page-detail">
       <div class="detail-header">
-        <button class="back-btn" @click="currentStep = 'tasks'">← กลับ</button>
+        <button class="back-btn" @click="currentStep = 'tasks'"><i class="bi bi-arrow-left"></i> กลับ</button>
         <h2 class="detail-title">ข้อมูลแจ้งเหตุ</h2>
         <div class="detail-id">{{ selectedTask.id }}</div>
       </div>
@@ -139,10 +140,10 @@
 
         <!-- Map Area -->
         <div class="map-card">
-          <div class="map-card-head">📍 แผนที่สถานที่เกิดเหตุ</div>
+          <div class="map-card-head"><i class="bi bi-geo-alt-fill"></i> แผนที่สถานที่เกิดเหตุ</div>
           <div class="map-mock-mobile">
             <div class="map-grid-lines"></div>
-            <div class="map-marker-pin">📍</div>
+            <div class="map-marker-pin"><i class="bi bi-geo-alt-fill"></i></div>
             <div class="map-location-label">{{ selectedTask.location }}</div>
           </div>
         </div>
@@ -150,7 +151,7 @@
         <!-- Incident Image -->
         <div class="info-card">
           <div class="info-card-head">
-            📷 รูปภาพแจ้งเหตุ
+            <i class="bi bi-camera-fill"></i> รูปภาพแจ้งเหตุ
             <span class="img-count-badge" v-if="selectedTask.images && selectedTask.images.length">
               {{ selectedTask.images.length }}/4
             </span>
@@ -163,7 +164,7 @@
               @click="lightboxImage = img"
             >
               <img :src="img" class="incident-thumb-img" :alt="'รูปภาพ ' + (idx + 1)" />
-              <div class="incident-thumb-overlay">🔍</div>
+              <div class="incident-thumb-overlay"><i class="bi bi-zoom-in"></i></div>
             </div>
           </div>
           <div v-else class="incident-img-area">
@@ -219,7 +220,7 @@
         </div>
 
         <button class="btn-primary-full" @click="currentStep = 'checkin'">
-          📍 เช็คอินสถานที่ปฏิบัติงาน
+          <i class="bi bi-geo-alt-fill"></i> เช็คอินสถานที่ปฏิบัติงาน
         </button>
       </div>
     </div>
@@ -227,7 +228,7 @@
     <!-- ══════════ STEP 3: CHECK-IN AT LOCATION ══════════ -->
     <div v-if="currentStep === 'checkin'" class="page-checkin">
       <div class="detail-header">
-        <button class="back-btn" @click="currentStep = 'detail'">← กลับ</button>
+        <button class="back-btn" @click="currentStep = 'detail'"><i class="bi bi-arrow-left"></i> กลับ</button>
         <h2 class="detail-title">เช็คอินสถานที่</h2>
         <div class="detail-id">{{ selectedTask.id }}</div>
       </div>
@@ -236,7 +237,7 @@
         <div class="checkin-status-card">
           <div class="checkin-pulse">
             <div class="pulse-ring"></div>
-            <div class="pulse-dot">📍</div>
+            <div class="pulse-dot"><i class="bi bi-geo-alt-fill"></i></div>
           </div>
           <div class="checkin-status-text">กำลังระบุตำแหน่ง...</div>
           <div class="checkin-coords">13.7681° N, 100.6350° E</div>
@@ -244,13 +245,13 @@
 
         <!-- Large Map -->
         <div class="map-card">
-          <div class="map-card-head">🗺️ ตำแหน่งปัจจุบันของท่าน</div>
+          <div class="map-card-head"><i class="bi bi-map-fill"></i> ตำแหน่งปัจจุบันของท่าน</div>
           <div class="map-mock-large">
             <div class="map-grid-lines"></div>
             <!-- Officer position -->
-            <div class="officer-marker">🦺</div>
+            <div class="officer-marker"><i class="bi bi-person-badge-fill"></i></div>
             <!-- Incident position -->
-            <div class="incident-marker">🚨</div>
+            <div class="incident-marker"><i class="bi bi-exclamation-octagon-fill"></i></div>
             <div class="distance-badge">ห่าง ~200 ม.</div>
           </div>
         </div>
@@ -273,7 +274,7 @@
         </div>
 
         <button class="btn-primary-full" @click="doCheckin">
-          ✅ ยืนยันเช็คอิน
+          <i class="bi bi-check-circle-fill"></i> ยืนยันเช็คอิน
         </button>
       </div>
     </div>
@@ -281,14 +282,14 @@
     <!-- ══════════ STEP 4: EVIDENCE CAPTURE & COMPLETE ══════════ -->
     <div v-if="currentStep === 'complete'" class="page-complete">
       <div class="detail-header">
-        <button class="back-btn" @click="currentStep = 'checkin'">← กลับ</button>
+        <button class="back-btn" @click="currentStep = 'checkin'"><i class="bi bi-arrow-left"></i> กลับ</button>
         <h2 class="detail-title">อัปเดตผลการปฏิบัติงาน</h2>
         <div class="detail-id">{{ selectedTask.id }}</div>
       </div>
 
       <div class="mobile-content">
         <div class="checkin-done-banner">
-          <span class="done-icon">✅</span>
+          <span class="done-icon"><i class="bi bi-check-circle-fill"></i></span>
           <span>เช็คอินสำเร็จ — {{ checkinTime }}</span>
         </div>
 
@@ -299,7 +300,7 @@
             <label v-for="o in outcomes" :key="o.key" class="outcome-radio">
               <input type="radio" :value="o.key" v-model="selectedOutcome" />
               <span class="outcome-box" :class="{ selected: selectedOutcome === o.key }">
-                {{ o.icon }} {{ o.label }}
+                <i :class="['bi', o.icon]"></i> {{ o.label }}
               </span>
             </label>
           </div>
@@ -318,7 +319,7 @@
 
         <!-- Photo Upload -->
         <div class="info-card">
-          <div class="info-card-head">📷 โปรดแนบรูปภาพงานที่ดำเนินการสำเร็จ</div>
+          <div class="info-card-head"><i class="bi bi-camera-fill"></i> โปรดแนบรูปภาพงานที่ดำเนินการสำเร็จ</div>
           <div class="evidence-upload" @click="triggerEvidenceUpload">
             <div v-if="!evidenceImage" class="evidence-placeholder">
               <div class="evidence-plus">+</div>
@@ -331,7 +332,7 @@
         </div>
 
         <button class="btn-primary-full btn-success" @click="submitCase">
-          💾 บันทึกและปิดเคส
+          <i class="bi bi-floppy-fill"></i> บันทึกและปิดเคส
         </button>
       </div>
     </div>
@@ -341,7 +342,7 @@
       <div class="success-content">
         <div class="success-icon-wrap">
           <div class="success-ring"></div>
-          <div class="success-check">✓</div>
+          <div class="success-check"><i class="bi bi-check-lg"></i></div>
         </div>
         <h2 class="success-title">ปิดเคสสำเร็จ!</h2>
         <p class="success-sub">เคส {{ selectedTask.id }} ได้รับการบันทึกเรียบร้อยแล้ว</p>
@@ -352,21 +353,92 @@
           </div>
           <div class="summary-row">
             <span class="summary-label">ผลการปฏิบัติงาน</span>
-            <span class="summary-val">{{ outcomeLabel }}</span>
+            <span class="summary-val"><i :class="['bi', outcomeIcon]"></i> {{ outcomeLabel }}</span>
           </div>
           <div class="summary-row">
             <span class="summary-label">เวลาปิดเคส</span>
             <span class="summary-val">{{ closeTime }}</span>
           </div>
         </div>
-        <button class="btn-primary-full" @click="backToTasks">← กลับสู่รายการภารกิจ</button>
+        <button class="btn-primary-full" @click="backToTasks"><i class="bi bi-arrow-left"></i> กลับสู่รายการภารกิจ</button>
+
       </div>
     </div>
+
+    <!-- Task Preview Modal -->
+    <transition name="tmodal-fade">
+      <div class="tmodal-overlay" v-if="showTaskModal && previewTask" @click.self="showTaskModal = false">
+        <div class="tmodal-panel">
+
+          <div class="tmodal-hd">
+            <div class="tmodal-hd-left">
+              <span class="task-id">{{ previewTask.id }}</span>
+              <span class="urgency-tag" :class="previewTask.urgency">{{ urgencyLabel(previewTask.urgency) }}</span>
+            </div>
+            <button class="tmodal-close" @click="showTaskModal = false"><i class="bi bi-x-lg"></i></button>
+          </div>
+
+          <div class="tmodal-body">
+            <div class="tmodal-info">
+              <div class="task-info-row">
+                <span class="task-info-icon"><i class="bi bi-calendar3"></i></span>
+                <span class="task-info-text">วันเวลาแจ้งเหตุ: {{ previewTask.date }}</span>
+              </div>
+              <div class="task-info-row">
+                <span class="task-info-icon"><i class="bi bi-geo-alt-fill"></i></span>
+                <span class="task-info-text">สถานที่: {{ previewTask.location }}</span>
+              </div>
+              <div class="task-info-row">
+                <span class="task-info-icon"><i class="bi bi-exclamation-circle-fill"></i></span>
+                <span class="task-info-text">ประเภท: {{ previewTask.type }}</span>
+              </div>
+            </div>
+
+            <div v-if="previewTask.images && previewTask.images.length" class="tmodal-img-sect">
+              <div class="tmodal-img-head">
+                <i class="bi bi-camera-fill"></i> รูปภาพแจ้งเหตุ
+                <span class="img-count-badge">{{ previewTask.images.length }}/4</span>
+              </div>
+              <div class="tmodal-img-grid">
+                <div
+                  v-for="(img, idx) in previewTask.images"
+                  :key="idx"
+                  class="tmodal-thumb"
+                  @click="lightboxImage = img; showTaskModal = false"
+                >
+                  <img :src="img" class="tmodal-thumb-img" :alt="'รูปที่ ' + (idx + 1)" />
+                  <div class="tmodal-thumb-overlay"><i class="bi bi-zoom-in"></i></div>
+                </div>
+              </div>
+            </div>
+            <div v-else class="tmodal-no-img">
+              <i class="bi bi-image"></i>
+              <span>ไม่มีรูปภาพแนบ</span>
+            </div>
+          </div>
+
+          <div class="tmodal-ft">
+            <button class="tmodal-btn-close" @click="showTaskModal = false">ปิด</button>
+            <button
+              v-if="previewTask.status === 'new'"
+              class="btn-accept"
+              @click="acceptTask(previewTask); showTaskModal = false"
+            ><i class="bi bi-check-lg"></i> รับเรื่อง</button>
+            <button
+              v-else-if="previewTask.status === 'assigned'"
+              class="btn-continue"
+              @click="continueTask(previewTask); showTaskModal = false"
+            ><i class="bi bi-play-fill"></i> เริ่มดำเนินการ</button>
+          </div>
+
+        </div>
+      </div>
+    </transition>
 
     <!-- Lightbox -->
     <transition name="fade">
       <div class="lightbox" v-if="lightboxImage" @click="lightboxImage = null">
-        <button class="lightbox-close" @click="lightboxImage = null">✕</button>
+        <button class="lightbox-close" @click="lightboxImage = null"><i class="bi bi-x-lg"></i></button>
         <img :src="lightboxImage" class="lightbox-img" @click.stop alt="lightbox" />
       </div>
     </transition>
@@ -413,6 +485,8 @@ export default {
       closeTime: '',
       evidenceImage: null,
       lightboxImage: null,
+      showTaskModal: false,
+      previewTask: null,
       completionNote: '',
       selectedOutcome: 'resolved',
 
@@ -436,10 +510,10 @@ export default {
       ],
 
       outcomes: [
-        { key: 'resolved', icon: '✅', label: 'แก้ไขสำเร็จ' },
-        { key: 'transferred', icon: '🚑', label: 'ส่งต่อโรงพยาบาล' },
-        { key: 'evacuated', icon: '🚌', label: 'อพยพแล้ว' },
-        { key: 'pending', icon: '⏳', label: 'รอหน่วยสนับสนุน' },
+        { key: 'resolved',    icon: 'bi-check-circle-fill',    label: 'แก้ไขสำเร็จ' },
+        { key: 'transferred', icon: 'bi-truck-front-fill',     label: 'ส่งต่อโรงพยาบาล' },
+        { key: 'evacuated',   icon: 'bi-bus-front-fill',       label: 'อพยพแล้ว' },
+        { key: 'pending',     icon: 'bi-hourglass-split',      label: 'รอหน่วยสนับสนุน' },
       ],
 
       tasks: [
@@ -507,10 +581,18 @@ export default {
     },
     outcomeLabel() {
       const o = this.outcomes.find(o => o.key === this.selectedOutcome)
-      return o ? `${o.icon} ${o.label}` : ''
+      return o ? o.label : ''
+    },
+    outcomeIcon() {
+      const o = this.outcomes.find(o => o.key === this.selectedOutcome)
+      return o ? o.icon : ''
     },
   },
   methods: {
+    openTaskModal(task) {
+      this.previewTask = task
+      this.showTaskModal = true
+    },
     tasksByTab(tab) {
       const map = { new: 'new', assigned: 'assigned', done: 'done' }
       return this.tasks.filter(t => t.status === map[tab])
@@ -1049,6 +1131,107 @@ export default {
   justify-content: center;
 }
 .incident-img-placeholder { color: #bbb; font-size: 14px; }
+
+/* ── Task Preview Modal ── */
+.tmodal-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,0.52);
+  display: flex; align-items: flex-end; justify-content: center;
+  padding: 0;
+}
+.tmodal-panel {
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+  width: 100%; max-width: 600px;
+  max-height: 88vh;
+  display: flex; flex-direction: column;
+  box-shadow: 0 -8px 40px rgba(0,0,0,0.25);
+  overflow: hidden;
+}
+.tmodal-hd {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 18px 12px;
+  border-bottom: 1px solid #f0f2f8;
+  flex-shrink: 0;
+}
+.tmodal-hd-left { display: flex; align-items: center; gap: 10px; }
+.tmodal-close {
+  width: 32px; height: 32px; border-radius: 8px;
+  border: 1.5px solid #e0e4ef; background: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; color: #888; cursor: pointer;
+  transition: all 0.15s;
+}
+.tmodal-close:hover { border-color: #ef4444; color: #ef4444; }
+.tmodal-body {
+  flex: 1; overflow-y: auto;
+  padding: 16px 18px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.tmodal-info {
+  background: #f8f9fc;
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.tmodal-img-sect { }
+.tmodal-img-head {
+  font-size: 13px; font-weight: 700; color: #555859;
+  margin-bottom: 10px;
+  display: flex; align-items: center; gap: 6px;
+}
+.tmodal-img-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.tmodal-thumb {
+  position: relative; aspect-ratio: 4/3;
+  border-radius: 10px; overflow: hidden;
+  cursor: pointer; background: #f0f2f8;
+}
+.tmodal-thumb-img {
+  width: 100%; height: 100%; object-fit: cover;
+  transition: transform 0.2s;
+  display: block;
+}
+.tmodal-thumb:hover .tmodal-thumb-img { transform: scale(1.05); }
+.tmodal-thumb-overlay {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.32);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; color: #fff;
+  opacity: 0; transition: opacity 0.2s;
+}
+.tmodal-thumb:hover .tmodal-thumb-overlay { opacity: 1; }
+.tmodal-no-img {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 8px;
+  padding: 28px; color: #bbb; font-size: 13px;
+  background: #f8f9fc; border-radius: 12px;
+}
+.tmodal-no-img i { font-size: 28px; }
+.tmodal-ft {
+  display: flex; align-items: center; justify-content: flex-end;
+  gap: 10px; padding: 12px 18px;
+  border-top: 1px solid #f0f2f8; flex-shrink: 0;
+}
+.tmodal-btn-close {
+  padding: 9px 18px; border-radius: 8px;
+  border: 1.5px solid #e0e4ef; background: #fff;
+  font-family: 'Kanit', 'Inter', sans-serif;
+  font-size: 14px; font-weight: 600; color: #555; cursor: pointer;
+}
+.tmodal-btn-close:hover { border-color: #aaa; color: #222; }
+.tmodal-fade-enter-active { animation: tmodal-in 0.28s cubic-bezier(0.34, 1.3, 0.64, 1); }
+.tmodal-fade-leave-active { animation: tmodal-out 0.18s ease-in; }
+@keyframes tmodal-in {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+@keyframes tmodal-out {
+  from { transform: translateY(0); opacity: 1; }
+  to   { transform: translateY(100%); opacity: 0; }
+}
 
 /* ── Lightbox ── */
 .lightbox {

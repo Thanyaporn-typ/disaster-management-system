@@ -4,13 +4,13 @@
     <!-- ══ Top Navbar ══ -->
     <nav class="admin-topbar">
       <div class="admin-topbar-left">
-        <div class="admin-logo-icon">⚙️</div>
+        <div class="admin-logo-icon"><i class="bi bi-shield-fill"></i></div>
         <span class="admin-topbar-title">Admin Control & Monitoring</span>
         <span class="admin-topbar-sub">Data Analysis, Alerts & System Oversight</span>
       </div>
       <div class="admin-topbar-right">
         <div class="admin-bell" @click="showAlerts = !showAlerts">
-          🔔
+          <i class="bi bi-bell-fill"></i>
           <span class="bell-badge" v-if="newAlerts > 0">{{ newAlerts }}</span>
         </div>
         <!-- Alert dropdown -->
@@ -49,7 +49,7 @@
           :class="['sidebar-item', activeView === v.key ? 'active' : '']"
           @click="activeView = v.key; showAlerts = false"
         >
-          <span class="sidebar-icon">{{ v.icon }}</span>
+          <span class="sidebar-icon"><i :class="['bi', v.icon]"></i></span>
           <span class="sidebar-label">{{ v.label }}</span>
         </div>
       </aside>
@@ -67,22 +67,22 @@
           <!-- Stats Row -->
           <div class="stats-row">
             <div class="stat-card" style="border-top:4px solid #3b82f6">
-              <div class="stat-icon">📋</div>
+              <div class="stat-icon" style="color:#3b82f6"><i class="bi bi-clipboard2-data-fill"></i></div>
               <div class="stat-num">{{ totalCount.toLocaleString() }}</div>
               <div class="stat-label">รับแจ้งทั้งหมด</div>
             </div>
             <div class="stat-card" style="border-top:4px solid #f59e0b">
-              <div class="stat-icon">⚙️</div>
+              <div class="stat-icon" style="color:#f59e0b"><i class="bi bi-gear-fill"></i></div>
               <div class="stat-num">{{ processingCount.toLocaleString() }}</div>
               <div class="stat-label">กำลังดำเนินการ</div>
             </div>
             <div class="stat-card" style="border-top:4px solid #22c55e">
-              <div class="stat-icon">✅</div>
+              <div class="stat-icon" style="color:#22c55e"><i class="bi bi-check-circle-fill"></i></div>
               <div class="stat-num">{{ doneCount.toLocaleString() }}</div>
               <div class="stat-label">เสร็จสิ้นแล้ว</div>
             </div>
             <div class="stat-card" style="border-top:4px solid #f8d247">
-              <div class="stat-icon">⏱️</div>
+              <div class="stat-icon" style="color:#f8d247"><i class="bi bi-stopwatch-fill"></i></div>
               <div class="stat-num">{{ slaRate }}%</div>
               <div class="stat-label">SLA ผ่านเกณฑ์</div>
             </div>
@@ -113,7 +113,8 @@
                     <tr
                       v-for="inc in allIncidents.slice(0, 8)"
                       :key="inc.id"
-                      :class="inc.urgency === 'high' && inc.status !== 'done' ? 'row-urgent' : ''"
+                      :class="[inc.urgency === 'high' && inc.status !== 'done' ? 'row-urgent' : '', 'row-clickable']"
+                      @click="openIncident(inc)"
                     >
                       <td class="td-id">{{ inc.id }}</td>
                       <td>{{ inc.type }}</td>
@@ -195,18 +196,21 @@
         <div v-if="activeView === 'incidents'" class="view-incidents">
           <div class="view-header">
             <h2 class="view-title">ข้อมูลแจ้งเหตุ</h2>
-            <button class="btn-export">⬇ Export CSV</button>
+            <button class="btn-export"><i class="bi bi-download"></i> Export CSV</button>
           </div>
 
           <!-- Urgent Alert Banner -->
           <div class="urgent-banner" v-if="urgentIncidents.length > 0">
             <span class="ub-pulse"></span>
-            <span class="ub-text">⚠️ มีเหตุการณ์เร่งด่วน {{ urgentIncidents.length }} รายการ ที่ยังไม่ได้รับการแก้ไข</span>
+            <span class="ub-text"><i class="bi bi-exclamation-triangle-fill"></i> มีเหตุการณ์เร่งด่วน {{ urgentIncidents.length }} รายการ ที่ยังไม่ได้รับการแก้ไข</span>
           </div>
 
           <!-- Filters -->
           <div class="filter-row">
-            <input class="search-input" v-model="searchQ" placeholder="🔍 ค้นหาหมายเลข, สถานที่..." />
+            <div class="search-wrap">
+              <i class="bi bi-search search-icon"></i>
+              <input class="search-input" v-model="searchQ" placeholder="ค้นหาหมายเลข, สถานที่..." />
+            </div>
             <select class="filter-select" v-model="filterUrgency">
               <option value="all">ทุกระดับ</option>
               <option value="high">ด่วนมาก</option>
@@ -235,13 +239,15 @@
                     <th>ระดับ</th>
                     <th>วันที่</th>
                     <th>สถานะ</th>
+                    <th></th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr
                     v-for="inc in filteredIncidents"
                     :key="inc.id"
-                    :class="inc.urgency === 'high' && inc.status !== 'done' ? 'row-urgent' : ''"
+                    :class="[inc.urgency === 'high' && inc.status !== 'done' ? 'row-urgent' : '', 'row-clickable']"
+                    @click="openIncident(inc)"
                   >
                     <td class="td-id">{{ inc.id }}</td>
                     <td>{{ inc.type }}</td>
@@ -251,11 +257,12 @@
                     <td><span :class="['urgency-badge', inc.urgency]">{{ urgencyText(inc.urgency) }}</span></td>
                     <td class="td-date">{{ inc.date }}</td>
                     <td><span :class="['status-pill', inc.status]">{{ statusText(inc.status) }}</span></td>
+                    <td><button class="btn-eye" @click.stop="openIncident(inc)"><i class="bi bi-eye-fill"></i></button></td>
                   </tr>
                 </tbody>
               </table>
               <div class="empty-table" v-if="filteredIncidents.length === 0">
-                <div>📭</div><div>ไม่พบรายการที่ค้นหา</div>
+                <div><i class="bi bi-inbox" style="font-size:2em"></i></div><div>ไม่พบรายการที่ค้นหา</div>
               </div>
             </div>
           </div>
@@ -334,10 +341,10 @@
                 <div class="map-area-label" style="top:7%;left:4%">มีนบุรี</div>
                 <div class="map-area-label" style="top:48%;left:3%">ประเวศ</div>
                 <!-- POIs -->
-                <div class="map-poi" style="top:27%;left:50%">🏥 รพ.รามคำแหง</div>
-                <div class="map-poi" style="top:44%;left:20%">🏫 โรงเรียน</div>
-                <div class="map-poi" style="top:14%;left:36%">🚒 สถานีดับเพลิง</div>
-                <div class="map-poi" style="top:67%;left:68%">🏛️ ที่ว่าการอำเภอ</div>
+                <div class="map-poi" style="top:27%;left:50%"><i class="bi bi-hospital-fill"></i> รพ.รามคำแหง</div>
+                <div class="map-poi" style="top:44%;left:20%"><i class="bi bi-building-fill"></i> โรงเรียน</div>
+                <div class="map-poi" style="top:14%;left:36%"><i class="bi bi-truck-front-fill"></i> สถานีดับเพลิง</div>
+                <div class="map-poi" style="top:67%;left:68%"><i class="bi bi-bank2"></i> ที่ว่าการอำเภอ</div>
                 <!-- Compass -->
                 <div class="map-compass">N ↑</div>
                 <!-- Risk zone circles -->
@@ -357,7 +364,7 @@
                   <div class="risk-zone-label">{{ zone.name }}</div>
                 </div>
                 <!-- Caution badge -->
-                <div class="caution-badge">⚠️ Caution</div>
+                <div class="caution-badge"><i class="bi bi-exclamation-triangle-fill"></i> Caution</div>
               </div>
             </div>
           </div>
@@ -371,7 +378,7 @@
 
           <!-- SLA Config -->
           <div class="card config-card">
-            <div class="card-head">⏱️ กำหนด SLA / Response Time</div>
+            <div class="card-head"><i class="bi bi-stopwatch-fill"></i> กำหนด SLA / Response Time</div>
             <div class="config-row">
               <label class="config-label">เวลาตอบสนองเป้าหมาย</label>
               <div class="sla-input-wrap">
@@ -394,15 +401,15 @@
               </div>
             </div>
             <div class="config-save-row">
-              <button class="btn-save" @click="savedSLA = true">💾 บันทึกการตั้งค่า</button>
-              <span class="save-confirm" v-if="savedSLA">✅ บันทึกแล้ว</span>
+              <button class="btn-save" @click="savedSLA = true"><i class="bi bi-floppy-fill"></i> บันทึกการตั้งค่า</button>
+              <span class="save-confirm" v-if="savedSLA"><i class="bi bi-check-circle-fill"></i> บันทึกแล้ว</span>
             </div>
           </div>
 
           <!-- RBAC -->
           <div class="card config-card">
             <div class="card-head-row">
-              <span class="card-head">👥 จัดการสิทธิ์ผู้ใช้งาน (RBAC)</span>
+              <span class="card-head"><i class="bi bi-people-fill"></i> จัดการสิทธิ์ผู้ใช้งาน (RBAC)</span>
               <button class="btn-sm">+ เพิ่มผู้ใช้</button>
             </div>
             <div class="table-wrap">
@@ -445,7 +452,7 @@
           <!-- Risk Zone Config -->
           <div class="card config-card">
             <div class="card-head-row">
-              <span class="card-head">🗺️ กำหนดพื้นที่เสี่ยงภัย</span>
+              <span class="card-head"><i class="bi bi-map-fill"></i> กำหนดพื้นที่เสี่ยงภัย</span>
               <button class="btn-sm" @click="activeView = 'map'">จัดการบนแผนที่ →</button>
             </div>
             <div class="table-wrap">
@@ -482,6 +489,124 @@
       © 2568 ระบบผู้ดูแลระบบแจ้งเหตุภัยพิบัติ — กรมป้องกันและบรรเทาสาธารณภัย
     </footer>
 
+    <!-- ════ INCIDENT DETAIL MODAL ════ -->
+    <transition name="modal-fade">
+      <div class="modal-overlay" v-if="showModal && selectedIncident" @click.self="closeModal">
+        <div class="modal-panel">
+
+          <!-- Header -->
+          <div class="modal-hd">
+            <div class="modal-hd-left">
+              <div class="modal-case-id">{{ selectedIncident.id }}</div>
+              <span :class="['urgency-badge', selectedIncident.urgency]">{{ urgencyText(selectedIncident.urgency) }}</span>
+            </div>
+            <button class="modal-close-btn" @click="closeModal"><i class="bi bi-x-lg"></i></button>
+          </div>
+
+          <!-- Status Stepper -->
+          <div class="modal-stepper">
+            <div v-for="(s, i) in statusSteps" :key="s.key" class="stepper-seg">
+              <button
+                :class="['stepper-btn',
+                  normalizeStatus(selectedIncident.status) === s.key ? 'current' : '',
+                  isStatusPast(selectedIncident, s.key) ? 'past' : ''
+                ]"
+                @click="updateIncidentStatus(selectedIncident.id, s.key)"
+              >
+                <span class="stepper-icon"><i :class="['bi', s.icon]"></i></span>
+                <span class="stepper-label">{{ s.label }}</span>
+              </button>
+              <div
+                v-if="i < statusSteps.length - 1"
+                :class="['stepper-line',
+                  isStatusPast(selectedIncident, statusSteps[i+1].key) ||
+                  normalizeStatus(selectedIncident.status) === statusSteps[i+1].key ? 'filled' : ''
+                ]"
+              ></div>
+            </div>
+          </div>
+
+          <!-- Body -->
+          <div class="modal-body">
+
+            <!-- Info Grid -->
+            <div class="modal-info-grid">
+              <div class="modal-info-sect">
+                <div class="modal-sect-title"><i class="bi bi-clipboard2-fill"></i> รายละเอียดเหตุการณ์</div>
+                <div class="mfield"><span class="mf-lbl">ประเภทเหตุ</span><span class="mf-val">{{ selectedIncident.type || '—' }}</span></div>
+                <div class="mfield"><span class="mf-lbl">สถานที่</span><span class="mf-val">{{ selectedIncident.location }}</span></div>
+                <div class="mfield"><span class="mf-lbl">วันที่แจ้ง</span><span class="mf-val">{{ selectedIncident.date }}</span></div>
+                <div class="mfield"><span class="mf-lbl">ผู้ประสบภัย</span><span class="mf-val">{{ selectedIncident.peopleCount != null ? selectedIncident.peopleCount + ' คน' : '—' }}</span></div>
+              </div>
+              <div class="modal-info-sect">
+                <div class="modal-sect-title"><i class="bi bi-person-fill"></i> ข้อมูลผู้แจ้ง</div>
+                <div class="mfield"><span class="mf-lbl">ชื่อ</span><span class="mf-val">{{ selectedIncident.contactName || '—' }}</span></div>
+                <div class="mfield">
+                  <span class="mf-lbl">โทรศัพท์</span>
+                  <span class="mf-val">
+                    <a v-if="selectedIncident.contactPhone" :href="'tel:' + selectedIncident.contactPhone" class="mf-phone">
+                      <i class="bi bi-telephone-fill"></i> {{ selectedIncident.contactPhone }}
+                    </a>
+                    <span v-else>—</span>
+                  </span>
+                </div>
+                <div class="mfield">
+                  <span class="mf-lbl">สถานะปัจจุบัน</span>
+                  <span :class="['status-pill', normalizeStatus(selectedIncident.status)]">
+                    {{ statusText(selectedIncident.status) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Images -->
+            <div v-if="selectedIncident.images && selectedIncident.images.length" class="modal-images-sect">
+              <div class="modal-sect-title"><i class="bi bi-images"></i> รูปภาพแนบ ({{ selectedIncident.images.length }})</div>
+              <div class="modal-img-grid">
+                <div v-for="(img, idx) in selectedIncident.images" :key="idx" class="modal-img-thumb" @click="lightboxImg = img">
+                  <img :src="img" alt="incident" />
+                  <div class="modal-img-overlay"><i class="bi bi-zoom-in"></i></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Timeline -->
+            <div class="modal-tl-sect">
+              <div class="modal-sect-title"><i class="bi bi-clock-history"></i> ประวัติดำเนินการ</div>
+              <div class="modal-tl">
+                <div v-for="(ev, i) in incidentTimeline" :key="i" class="tl-ev">
+                  <div class="tl-ev-col">
+                    <div :class="['tl-ev-dot', i === 0 ? 'latest' : '']"></div>
+                    <div class="tl-ev-line" v-if="i < incidentTimeline.length - 1"></div>
+                  </div>
+                  <div class="tl-ev-body">
+                    <div class="tl-ev-label">{{ ev.label }}</div>
+                    <div class="tl-ev-time">{{ ev.time }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /.modal-body -->
+
+          <!-- Footer -->
+          <div class="modal-ft">
+            <button class="modal-btn-outline" @click="closeModal">ปิด</button>
+            <button class="modal-btn-primary"><i class="bi bi-printer-fill"></i> พิมพ์รายงาน</button>
+          </div>
+
+        </div>
+      </div>
+    </transition>
+
+    <!-- Lightbox -->
+    <transition name="modal-fade">
+      <div class="modal-overlay lb-overlay" v-if="lightboxImg" @click="lightboxImg = null">
+        <img :src="lightboxImg" class="lb-img" @click.stop alt="lightbox" />
+        <button class="lb-close" @click="lightboxImg = null"><i class="bi bi-x-lg"></i></button>
+      </div>
+    </transition>
+
   </div>
 </template>
 
@@ -514,29 +639,38 @@ export default {
       newZone: { name: '', level: 'medium' },
       chartH: 90,
       chartPad: 12,
+      showModal: false,
+      selectedIncident: null,
+      lightboxImg: null,
+      statusMap: {},
+      statusSteps: [
+        { key: 'new',      label: 'รับเรื่อง',      icon: 'bi-inbox-fill' },
+        { key: 'assigned', label: 'ดำเนินการ',      icon: 'bi-person-gear' },
+        { key: 'done',     label: 'เสร็จสิ้น',      icon: 'bi-check-circle-fill' },
+      ],
 
       todayStr: now.toLocaleDateString('th-TH', {
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
       }),
 
       views: [
-        { key: 'overview',  icon: '📊', label: 'ภาพรวมทั้งหมด' },
-        { key: 'incidents', icon: '📋', label: 'ข้อมูลแจ้งเหตุ' },
-        { key: 'map',       icon: '🗺️', label: 'กำหนดพื้นที่เสี่ยงภัย' },
-        { key: 'config',    icon: '⚙️', label: 'กำหนดข้อมูลหลัก' },
+        { key: 'overview',  icon: 'bi-bar-chart-line-fill', label: 'ภาพรวมทั้งหมด' },
+        { key: 'incidents', icon: 'bi-clipboard2-data-fill', label: 'ข้อมูลแจ้งเหตุ' },
+        { key: 'map',       icon: 'bi-map-fill',            label: 'กำหนดพื้นที่เสี่ยงภัย' },
+        { key: 'config',    icon: 'bi-gear-fill',           label: 'กำหนดข้อมูลหลัก' },
       ],
 
       mockIncidents: [
-        { id: 'NO.1111', type: 'น้ำท่วม',   location: 'บ้านท่า ลาดกระบัง',       urgency: 'high', status: 'done',     date: '1/1/26',    contactName: 'นางไก่',   contactPhone: '080-111-111' },
-        { id: 'NO.1112', type: 'ไฟไหม้',    location: 'ซอยลาดพร้าว 41',          urgency: 'high', status: 'assigned', date: '1/1/26',    contactName: 'นายแดง',   contactPhone: '081-222-333' },
-        { id: 'NO.1113', type: 'อุบัติเหตุ', location: 'ถนนพหลโยธิน กม.5',       urgency: 'mid',  status: 'assigned', date: '1/1/26',    contactName: 'นายดำ',    contactPhone: '082-444-555' },
-        { id: 'NO.1098', type: 'น้ำท่วม',   location: 'ตลาดเช้า นครปฐม',         urgency: 'mid',  status: 'assigned', date: '28/12/25',  contactName: 'นางขาว',   contactPhone: '083-666-777' },
-        { id: 'NO.1045', type: 'ดินถล่ม',   location: 'โรงเรียนบ้านท่า',          urgency: 'low',  status: 'done',     date: '15/12/25',  contactName: 'นายเขียว', contactPhone: '084-888-999' },
-        { id: 'NO.1032', type: 'น้ำท่วม',   location: 'ชุมชนริมคลอง สะพานสูง',   urgency: 'high', status: 'done',     date: '10/12/25',  contactName: 'นางฟ้า',   contactPhone: '085-000-111' },
-        { id: 'NO.1020', type: 'ไฟป่า',     location: 'เขาดินวนา มีนบุรี',        urgency: 'mid',  status: 'done',     date: '5/12/25',   contactName: 'นายใจ',    contactPhone: '086-222-333' },
-        { id: 'NO.1010', type: 'แก๊สรั่ว',  location: 'หมู่บ้านการเคหะ รามคำแหง', urgency: 'high', status: 'new',      date: '1/12/25',   contactName: 'นางดี',    contactPhone: '087-444-555' },
-        { id: 'NO.1005', type: 'น้ำท่วม',   location: 'ถนนรามคำแหง 24',           urgency: 'low',  status: 'done',     date: '28/11/25',  contactName: 'นายมี',    contactPhone: '088-666-777' },
-        { id: 'NO.0998', type: 'อาคารถล่ม', location: 'ซอยสุขาภิบาล 3',          urgency: 'high', status: 'done',     date: '20/11/25',  contactName: 'นางสุข',   contactPhone: '089-888-999' },
+        { id: 'NO.1111', type: 'น้ำท่วม',   location: 'บ้านท่า ลาดกระบัง',       urgency: 'high', status: 'done',     date: '1/1/26',    contactName: 'นางไก่',   contactPhone: '080-111-111', images: ['https://picsum.photos/seed/flood1/600/400', 'https://picsum.photos/seed/flood2/600/400', 'https://picsum.photos/seed/flood3/600/400'] },
+        { id: 'NO.1112', type: 'ไฟไหม้',    location: 'ซอยลาดพร้าว 41',          urgency: 'high', status: 'assigned', date: '1/1/26',    contactName: 'นายแดง',   contactPhone: '081-222-333', images: ['https://picsum.photos/seed/fire1/600/400', 'https://picsum.photos/seed/fire2/600/400'] },
+        { id: 'NO.1113', type: 'อุบัติเหตุ', location: 'ถนนพหลโยธิน กม.5',       urgency: 'mid',  status: 'assigned', date: '1/1/26',    contactName: 'นายดำ',    contactPhone: '082-444-555', images: ['https://picsum.photos/seed/acc1/600/400', 'https://picsum.photos/seed/acc2/600/400', 'https://picsum.photos/seed/acc3/600/400', 'https://picsum.photos/seed/acc4/600/400'] },
+        { id: 'NO.1098', type: 'น้ำท่วม',   location: 'ตลาดเช้า นครปฐม',         urgency: 'mid',  status: 'assigned', date: '28/12/25',  contactName: 'นางขาว',   contactPhone: '083-666-777', images: ['https://picsum.photos/seed/flood4/600/400', 'https://picsum.photos/seed/flood5/600/400'] },
+        { id: 'NO.1045', type: 'ดินถล่ม',   location: 'โรงเรียนบ้านท่า',          urgency: 'low',  status: 'done',     date: '15/12/25',  contactName: 'นายเขียว', contactPhone: '084-888-999', images: ['https://picsum.photos/seed/land1/600/400', 'https://picsum.photos/seed/land2/600/400'] },
+        { id: 'NO.1032', type: 'น้ำท่วม',   location: 'ชุมชนริมคลอง สะพานสูง',   urgency: 'high', status: 'done',     date: '10/12/25',  contactName: 'นางฟ้า',   contactPhone: '085-000-111', images: ['https://picsum.photos/seed/flood6/600/400', 'https://picsum.photos/seed/flood7/600/400', 'https://picsum.photos/seed/flood8/600/400'] },
+        { id: 'NO.1020', type: 'ไฟป่า',     location: 'เขาดินวนา มีนบุรี',        urgency: 'mid',  status: 'done',     date: '5/12/25',   contactName: 'นายใจ',    contactPhone: '086-222-333', images: ['https://picsum.photos/seed/wild1/600/400', 'https://picsum.photos/seed/wild2/600/400'] },
+        { id: 'NO.1010', type: 'แก๊สรั่ว',  location: 'หมู่บ้านการเคหะ รามคำแหง', urgency: 'high', status: 'new',      date: '1/12/25',   contactName: 'นางดี',    contactPhone: '087-444-555', images: ['https://picsum.photos/seed/gas1/600/400'] },
+        { id: 'NO.1005', type: 'น้ำท่วม',   location: 'ถนนรามคำแหง 24',           urgency: 'low',  status: 'done',     date: '28/11/25',  contactName: 'นายมี',    contactPhone: '088-666-777', images: ['https://picsum.photos/seed/flood9/600/400', 'https://picsum.photos/seed/flood10/600/400'] },
+        { id: 'NO.0998', type: 'อาคารถล่ม', location: 'ซอยสุขาภิบาล 3',          urgency: 'high', status: 'done',     date: '20/11/25',  contactName: 'นางสุข',   contactPhone: '089-888-999', images: ['https://picsum.photos/seed/build1/600/400', 'https://picsum.photos/seed/build2/600/400', 'https://picsum.photos/seed/build3/600/400'] },
       ],
 
       riskZones: [
@@ -546,7 +680,7 @@ export default {
       ],
 
       rbacUsers: [
-        { id: 1, name: 'สิบตรีสมชาย', role: 'เจ้าหน้าที่ภาคสนาม', zone: 'ลาดกระบัง',   active: true  },
+        { id: 1, name: 'นายสมชาย', role: 'เจ้าหน้าที่ภาคสนาม', zone: 'ลาดกระบัง',   active: true  },
         { id: 2, name: 'นายสมหมาย',   role: 'เจ้าหน้าที่ภาคสนาม', zone: 'สะพานสูง',    active: true  },
         { id: 3, name: 'นางสาวมานี',  role: 'ผู้ประสานงาน',        zone: 'ทั้งหมด',      active: true  },
         { id: 4, name: 'นายวิชาญ',    role: 'หัวหน้าชุด',          zone: 'ลาดกระบัง',   active: false },
@@ -572,7 +706,23 @@ export default {
 
   computed: {
     allIncidents() {
-      return [...this.externalIncidents, ...this.mockIncidents]
+      return [...this.externalIncidents, ...this.mockIncidents].map(inc => {
+        const override = this.statusMap[inc.id]
+        return override ? { ...inc, status: override } : inc
+      })
+    },
+    incidentTimeline() {
+      if (!this.selectedIncident) return []
+      const s = this.normalizeStatus(this.selectedIncident.status)
+      const date = this.selectedIncident.date || '—'
+      const events = [{ label: 'รับเรื่องเข้าระบบ', time: date }]
+      if (s === 'assigned' || s === 'done') {
+        events.unshift({ label: 'มอบหมายเจ้าหน้าที่ภาคสนาม', time: date })
+      }
+      if (s === 'done') {
+        events.unshift({ label: 'ปิดเคสเรียบร้อยแล้ว', time: date })
+      }
+      return events
     },
     totalCount() { return this.allIncidents.length + 1990 },
     processingCount() {
@@ -637,6 +787,31 @@ export default {
     },
     removeZone(id) {
       this.riskZones = this.riskZones.filter(z => z.id !== id)
+    },
+
+    openIncident(inc) {
+      this.selectedIncident = { ...inc }
+      this.showModal = true
+    },
+    closeModal() {
+      this.showModal = false
+      this.lightboxImg = null
+    },
+    updateIncidentStatus(id, status) {
+      this.$set(this.statusMap, id, status)
+      if (this.selectedIncident && this.selectedIncident.id === id) {
+        this.selectedIncident = { ...this.selectedIncident, status }
+      }
+    },
+    normalizeStatus(s) {
+      if (s === 'received' || s === 'new') return 'new'
+      if (s === 'processing' || s === 'assigned') return 'assigned'
+      return s || 'new'
+    },
+    isStatusPast(inc, key) {
+      const order = ['new', 'assigned', 'done']
+      const current = order.indexOf(this.normalizeStatus(inc.status))
+      return order.indexOf(key) < current
     },
   },
 }
@@ -912,10 +1087,17 @@ export default {
 .filter-row {
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
 }
-.search-input {
+.search-wrap {
   flex: 1; min-width: 200px;
+  position: relative; display: flex; align-items: center;
+}
+.search-icon {
+  position: absolute; left: 12px; color: #aaa; font-size: 14px; pointer-events: none;
+}
+.search-input {
+  width: 100%;
   border: 1.5px solid #e0e4ef; border-radius: 8px;
-  padding: 8px 14px; font-family: 'Kanit', 'Inter', sans-serif;
+  padding: 8px 14px 8px 34px; font-family: 'Kanit', 'Inter', sans-serif;
   font-size: 14px; color: #555859; outline: none;
 }
 .search-input:focus { border-color: #f8d247; }
@@ -1246,7 +1428,8 @@ export default {
 
   /* Filter row */
   .filter-row { flex-direction: column; gap: 8px; align-items: stretch; }
-  .search-input { min-width: unset; width: 100%; font-size: 13px; padding: 8px 12px; }
+  .search-wrap { min-width: unset; width: 100%; }
+  .search-input { font-size: 13px; padding: 8px 12px 8px 34px; }
   .filter-select { width: 100%; font-size: 13px; padding: 8px 10px; }
   .filter-count { text-align: right; font-size: 12px; }
 
@@ -1283,5 +1466,233 @@ export default {
 
   /* Alert dropdown */
   .alert-dropdown { right: 0; width: 260px; }
+}
+
+/* ══════════════════════════════════════
+   INCIDENT DETAIL MODAL
+══════════════════════════════════════ */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0,0,0,0.55);
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+}
+.modal-panel {
+  background: #fff;
+  border-radius: 18px;
+  width: 100%; max-width: 680px;
+  max-height: 90vh;
+  display: flex; flex-direction: column;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.3);
+  overflow: hidden;
+}
+
+/* Header */
+.modal-hd {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 24px 14px;
+  border-bottom: 1px solid #f0f2f8;
+  flex-shrink: 0;
+}
+.modal-hd-left { display: flex; align-items: center; gap: 12px; }
+.modal-case-id { font-size: 20px; font-weight: 800; color: #555859; }
+.modal-close-btn {
+  width: 34px; height: 34px; border-radius: 8px;
+  border: 1.5px solid #e0e4ef; background: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; color: #888; cursor: pointer;
+  transition: all 0.15s;
+}
+.modal-close-btn:hover { border-color: #ef4444; color: #ef4444; background: #fff5f5; }
+
+/* Status Stepper */
+.modal-stepper {
+  display: flex; align-items: center;
+  padding: 14px 24px;
+  background: #f8f9fc;
+  border-bottom: 1px solid #e8eaf0;
+  flex-shrink: 0;
+}
+.stepper-seg {
+  display: flex; align-items: center; flex: 1;
+}
+.stepper-seg:last-child { flex: none; }
+.stepper-btn {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 4px; padding: 8px 10px;
+  border: none; background: none; cursor: pointer;
+  border-radius: 10px; color: #bbb;
+  font-family: 'Kanit', 'Inter', sans-serif;
+  font-size: 11px; font-weight: 700;
+  transition: all 0.2s; white-space: nowrap;
+}
+.stepper-icon { font-size: 20px; line-height: 1; }
+.stepper-btn:hover { color: #555; background: rgba(0,0,0,0.05); }
+.stepper-btn.past { color: #22c55e; }
+.stepper-btn.current {
+  color: #555859; background: #f8d247;
+  box-shadow: 0 2px 10px rgba(248,210,71,0.4);
+}
+.stepper-line {
+  flex: 1; height: 3px; background: #e8eaf0;
+  border-radius: 2px; margin: 0 6px 14px;
+  transition: background 0.3s;
+}
+.stepper-line.filled { background: #22c55e; }
+
+/* Body */
+.modal-body {
+  flex: 1; overflow-y: auto;
+  padding: 20px 24px;
+  display: flex; flex-direction: column; gap: 20px;
+}
+
+/* Info Grid */
+.modal-info-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+}
+.modal-info-sect {
+  background: #f8f9fc;
+  border-radius: 12px; padding: 14px 16px;
+}
+.modal-sect-title {
+  font-size: 12px; font-weight: 800;
+  color: #555859; margin-bottom: 12px;
+  text-transform: uppercase; letter-spacing: 0.5px;
+  display: flex; align-items: center; gap: 6px;
+}
+.mfield {
+  display: flex; align-items: flex-start;
+  gap: 8px; margin-bottom: 8px;
+  font-size: 13px;
+}
+.mf-lbl { color: #aaa; font-weight: 600; min-width: 72px; flex-shrink: 0; }
+.mf-val { color: #333; font-weight: 500; word-break: break-word; }
+.mf-phone {
+  color: #2563eb; text-decoration: none; font-weight: 600;
+  display: flex; align-items: center; gap: 5px;
+}
+.mf-phone:hover { text-decoration: underline; }
+
+/* Images */
+.modal-images-sect { }
+.modal-img-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 8px; margin-top: 10px;
+}
+.modal-img-thumb {
+  position: relative; aspect-ratio: 1;
+  border-radius: 10px; overflow: hidden;
+  cursor: pointer; background: #f0f2f8;
+}
+.modal-img-thumb img {
+  width: 100%; height: 100%; object-fit: cover;
+  transition: transform 0.2s;
+}
+.modal-img-thumb:hover img { transform: scale(1.06); }
+.modal-img-overlay {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.3);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 18px;
+  opacity: 0; transition: opacity 0.2s;
+}
+.modal-img-thumb:hover .modal-img-overlay { opacity: 1; }
+
+/* Timeline */
+.modal-tl-sect { }
+.modal-tl {
+  display: flex; flex-direction: column; gap: 0;
+  margin-top: 10px;
+}
+.tl-ev { display: flex; gap: 12px; }
+.tl-ev-col { display: flex; flex-direction: column; align-items: center; width: 14px; }
+.tl-ev-dot {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: #e0e4ef; border: 2px solid #e0e4ef;
+  flex-shrink: 0;
+}
+.tl-ev-dot.latest { background: #22c55e; border-color: #22c55e; }
+.tl-ev-line {
+  width: 2px; flex: 1; background: #e8eaf0;
+  margin: 2px 0; min-height: 18px;
+}
+.tl-ev-body { padding-bottom: 14px; }
+.tl-ev-label { font-size: 13px; font-weight: 700; color: #333; }
+.tl-ev-time { font-size: 11px; color: #aaa; margin-top: 2px; }
+
+/* Footer */
+.modal-ft {
+  display: flex; align-items: center; justify-content: flex-end;
+  gap: 10px; padding: 14px 24px;
+  border-top: 1px solid #f0f2f8;
+  flex-shrink: 0;
+}
+.modal-btn-outline {
+  padding: 9px 20px; border-radius: 8px;
+  border: 1.5px solid #e0e4ef; background: #fff;
+  font-family: 'Kanit', 'Inter', sans-serif;
+  font-size: 14px; font-weight: 600;
+  color: #555; cursor: pointer; transition: all 0.15s;
+}
+.modal-btn-outline:hover { border-color: #aaa; color: #222; }
+.modal-btn-primary {
+  padding: 9px 20px; border-radius: 8px;
+  border: none; background: #555859; color: #fff;
+  font-family: 'Kanit', 'Inter', sans-serif;
+  font-size: 14px; font-weight: 600;
+  cursor: pointer; display: flex; align-items: center; gap: 8px;
+  transition: background 0.15s;
+}
+.modal-btn-primary:hover { background: #3d3f40; }
+
+/* Table row hover */
+.row-clickable { cursor: pointer; }
+.row-clickable:hover td { background: #f5f7ff !important; }
+.btn-eye {
+  width: 30px; height: 30px; border-radius: 8px;
+  border: 1.5px solid #e0e4ef; background: #fff;
+  color: #555; font-size: 14px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.btn-eye:hover { background: #555859; color: #f8d247; border-color: #555859; }
+
+/* Lightbox */
+.lb-overlay { background: rgba(0,0,0,0.88); }
+.lb-img { max-width: 90vw; max-height: 85vh; border-radius: 8px; display: block; }
+.lb-close {
+  position: absolute; top: 20px; right: 20px;
+  width: 40px; height: 40px; border-radius: 50%;
+  border: none; background: rgba(255,255,255,0.15);
+  color: #fff; font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s;
+}
+.lb-close:hover { background: rgba(255,255,255,0.3); }
+
+/* Modal transition */
+.modal-fade-enter-active { animation: modal-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.modal-fade-leave-active { animation: modal-out 0.18s ease-in; }
+@keyframes modal-in {
+  from { opacity: 0; transform: scale(0.93); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes modal-out {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(0.95); }
+}
+
+/* Modal responsive */
+@media (max-width: 600px) {
+  .modal-panel { border-radius: 14px; max-height: 95vh; }
+  .modal-info-grid { grid-template-columns: 1fr; }
+  .modal-img-grid { grid-template-columns: repeat(3, 1fr); }
+  .modal-hd { padding: 14px 16px 10px; }
+  .modal-body { padding: 14px 16px; }
+  .modal-stepper { padding: 10px 12px; }
+  .stepper-btn { font-size: 10px; padding: 6px 6px; }
+  .stepper-icon { font-size: 16px; }
+  .modal-ft { padding: 12px 16px; }
 }
 </style>
