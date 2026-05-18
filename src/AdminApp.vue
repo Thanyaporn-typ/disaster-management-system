@@ -537,6 +537,12 @@
                 <div class="mfield"><span class="mf-lbl">สถานที่</span><span class="mf-val">{{ selectedIncident.location }}</span></div>
                 <div class="mfield"><span class="mf-lbl">วันที่แจ้ง</span><span class="mf-val">{{ selectedIncident.date }}</span></div>
                 <div class="mfield"><span class="mf-lbl">ผู้ประสบภัย</span><span class="mf-val">{{ selectedIncident.peopleCount != null ? selectedIncident.peopleCount + ' คน' : '—' }}</span></div>
+                <div class="mfield mfield-needs" v-if="selectedIncident.needs && selectedIncident.needs.length">
+                  <span class="mf-lbl">ความต้องการ</span>
+                  <span class="mf-val mf-needs-chips">
+                    <span v-for="need in selectedIncident.needs" :key="need.key" class="mf-need-chip">{{ need.label }}</span>
+                  </span>
+                </div>
               </div>
               <div class="modal-info-sect">
                 <div class="modal-sect-title"><i class="bi bi-person-fill"></i> ข้อมูลผู้แจ้ง</div>
@@ -1610,6 +1616,17 @@ export default {
 }
 .mf-lbl { color: #aaa; font-weight: 600; min-width: 72px; flex-shrink: 0; }
 .mf-val { color: #333; font-weight: 500; word-break: break-word; }
+.mfield-needs { align-items: flex-start; }
+.mf-needs-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.mf-need-chip {
+  background: #fdf6d8;
+  border: 1.5px solid #f8d247;
+  color: #555859;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 999px;
+}
 .mf-phone {
   color: #2563eb; text-decoration: none; font-weight: 600;
   display: flex; align-items: center; gap: 5px;

@@ -468,6 +468,15 @@
             </div>
           </div>
 
+          <div v-if="selectedCase.needs && selectedCase.needs.length" class="modal-needs-sect">
+            <div class="modal-section-title">ความต้องการให้ช่วยเหลือ</div>
+            <div class="modal-needs-chips">
+              <span v-for="need in selectedCase.needs" :key="need.key" class="modal-need-chip">
+                {{ need.label }}
+              </span>
+            </div>
+          </div>
+
           <div class="modal-section-title">ความคืบหน้า</div>
           <div class="modal-timeline">
             <div class="modal-tl-item">
@@ -2481,6 +2490,24 @@ export default {
 .modal-tl-time {
   font-size: 12px;
   color: #bbb;
+}
+
+.modal-needs-sect { margin-bottom: 20px; }
+
+.modal-needs-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.modal-need-chip {
+  background: #fdf6d8;
+  border: 1.5px solid #f8d247;
+  color: #555859;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 999px;
 }
 
 .modal-result-sect { margin-top: 4px; }
