@@ -1685,16 +1685,41 @@ export default {
   to   { opacity: 0; transform: scale(0.95); }
 }
 
-/* Modal responsive */
+/* Modal responsive — tablet (≤600px) */
 @media (max-width: 600px) {
   .modal-panel { border-radius: 14px; max-height: 95vh; }
   .modal-info-grid { grid-template-columns: 1fr; }
-  .modal-img-grid { grid-template-columns: repeat(3, 1fr); }
+  .modal-img-grid { grid-template-columns: repeat(2, 1fr); }
   .modal-hd { padding: 14px 16px 10px; }
-  .modal-body { padding: 14px 16px; }
+  .modal-body { padding: 14px 16px; -webkit-overflow-scrolling: touch; }
   .modal-stepper { padding: 10px 12px; }
-  .stepper-btn { font-size: 10px; padding: 6px 6px; }
+  .stepper-btn { font-size: 10px; padding: 6px 8px; min-width: 60px; }
   .stepper-icon { font-size: 16px; }
-  .modal-ft { padding: 12px 16px; }
+  .modal-ft {
+    padding: 12px 16px;
+    flex-direction: column; gap: 8px;
+  }
+  .modal-btn-outline,
+  .modal-btn-primary { width: 100%; justify-content: center; }
+}
+
+/* Modal responsive — mobile bottom-sheet (≤480px) */
+@media (max-width: 480px) {
+  .modal-overlay { align-items: flex-end; padding: 0; }
+  .modal-panel {
+    border-radius: 20px 20px 0 0;
+    max-height: 88vh;
+    width: 100%;
+  }
+  .modal-panel::before {
+    content: '';
+    display: block;
+    width: 36px; height: 4px;
+    background: #ddd; border-radius: 2px;
+    margin: 10px auto 0;
+    flex-shrink: 0;
+  }
+  .modal-img-grid { grid-template-columns: repeat(2, 1fr); }
+  .mf-lbl { min-width: 64px; }
 }
 </style>

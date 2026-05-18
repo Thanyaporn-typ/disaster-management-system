@@ -44,7 +44,7 @@ See [Configuration Reference](https://cli.vuejs.org/config/)
 
 ```bash
 git add .
-git commit -m "edit : ico"
+git commit -m "edit : responsive"
 git push
 ```
 
