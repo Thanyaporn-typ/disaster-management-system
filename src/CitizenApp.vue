@@ -261,7 +261,7 @@
             <!-- Description -->
             <div class="field-group">
               <label class="field-label">รายละเอียดเพิ่มเติม <span class="optional">(ไม่บังคับ)</span></label>
-              <textarea class="field-textarea" placeholder="ระบุรายละเอียดเพิ่มเติม เช่น ลักษณะเหตุการณ์ ความต้องการเร่งด่วน..." rows="3"></textarea>
+              <textarea class="field-textarea" v-model="form.description" placeholder="ระบุรายละเอียดเพิ่มเติม เช่น ลักษณะเหตุการณ์ ความต้องการเร่งด่วน..." rows="3"></textarea>
             </div>
           </div>
 
@@ -526,7 +526,7 @@ export default {
       urgency: 1,
       peopleCount: 0,
       previewImages: [],
-      form: { name: '', phone: '', location: '' },
+      form: { name: '', phone: '', location: '', description: '' },
       caseNumber: '1111',
       activeTab: 'all',
       urgencyLevels: [
@@ -591,7 +591,8 @@ export default {
         rescue: 'ต้องการกู้ภัย', shelter: 'ต้องการที่พัก',
         clothes: 'ขาดเครื่องนุ่งห่ม', other: 'เหตุฉุกเฉิน',
       }
-      const checkedNeed = this.needs.find(n => n.checked)
+      const checkedNeeds = this.needs.filter(n => n.checked)
+      const checkedNeed = checkedNeeds[0]
       const now = new Date()
       const dateStr = `${now.getDate()}/${now.getMonth()+1}/${String(now.getFullYear()).slice(-2)} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`
       const report = {
@@ -604,6 +605,8 @@ export default {
         contactName: this.form.name || 'ไม่ระบุ',
         contactPhone: this.form.phone || 'ไม่ระบุ',
         peopleCount: this.peopleCount,
+        needs: checkedNeeds.map(n => ({ key: n.key, label: n.label })),
+        description: this.form.description || '',
         images: [...this.previewImages],
       }
       this.cases.unshift({

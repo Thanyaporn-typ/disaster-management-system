@@ -364,10 +364,38 @@
                 <span class="task-info-icon"><i class="bi bi-geo-alt-fill"></i></span>
                 <span class="task-info-text">สถานที่: {{ previewTask.location }}</span>
               </div>
-              <div class="task-info-row">
+              <!-- <div class="task-info-row">
                 <span class="task-info-icon"><i class="bi bi-exclamation-circle-fill"></i></span>
                 <span class="task-info-text">ประเภท: {{ previewTask.type }}</span>
+              </div> -->
+              <div class="task-info-row">
+                <span class="task-info-icon"><i class="bi bi-people-fill"></i></span>
+                <span class="task-info-text">ผู้ประสบภัย: {{ previewTask.peopleCount || 0 }} คน</span>
               </div>
+              <div class="task-info-row" v-if="previewTask.contactName">
+                <span class="task-info-icon"><i class="bi bi-person-fill"></i></span>
+                <span class="task-info-text">ผู้แจ้งเหตุ: {{ previewTask.contactName }}</span>
+              </div>
+              <div class="task-info-row" v-if="previewTask.contactPhone">
+                <span class="task-info-icon"><i class="bi bi-telephone-fill"></i></span>
+                <span class="task-info-text">
+                  โทร:
+                  <a :href="'tel:' + previewTask.contactPhone" class="tmodal-phone-link">{{ previewTask.contactPhone }}</a>
+                </span>
+              </div>
+              <div class="task-info-row tmodal-needs-row" v-if="previewTask.needs && previewTask.needs.length">
+                <span class="task-info-icon"><i class="bi bi-hand-index-thumb-fill"></i></span>
+                <span class="tmodal-needs-chips">
+                  <span v-for="need in previewTask.needs" :key="need.key" class="tmodal-need-chip">
+                    {{ need.label }}
+                  </span>
+                </span>
+              </div>
+            </div>
+
+            <div v-if="previewTask.description" class="tmodal-desc-sect">
+              <div class="tmodal-desc-label"><i class="bi bi-chat-left-text-fill"></i> รายละเอียดเพิ่มเติม</div>
+              <div class="tmodal-desc-body">{{ previewTask.description }}</div>
             </div>
 
             <div v-if="previewTask.images && previewTask.images.length" class="tmodal-img-sect">
@@ -428,13 +456,16 @@ export default {
     },
   },
   watch: {
-    externalTasks(newList) {
-      newList.forEach(task => {
-        if (!this.tasks.find(t => t.id === task.id)) {
-          this.tasks.unshift({ ...task })
-          this.newAlertCount++
-        }
-      })
+    externalTasks: {
+      immediate: true,
+      handler(newList) {
+        newList.forEach(task => {
+          if (!this.tasks.find(t => t.id === task.id)) {
+            this.tasks.unshift({ ...task })
+            this.newAlertCount++
+          }
+        })
+      },
     },
   },
   data() {
@@ -445,9 +476,9 @@ export default {
       selectedTask: null,
       newAlertCount: 0,
       fieldUrgency: 1,
-      peopleCount: 10,
-      contactName: 'นางไก่',
-      contactPhone: '080-111-111',
+      peopleCount: 0,
+      contactName: '',
+      contactPhone: '',
       checkinTime: '',
       closeTime: '',
       evidenceImage: null,
@@ -483,58 +514,7 @@ export default {
         { key: 'pending', icon: 'bi-hourglass-split', label: 'รอหน่วยสนับสนุน' },
       ],
 
-      tasks: [
-        {
-          id: 'NO.1111',
-          date: '1/1/26 09:30',
-          location: 'บ้านท่า, ลาดกระบัง',
-          type: 'น้ำท่วม',
-          urgency: 'high',
-          status: 'new',
-          images: [
-            'https://picsum.photos/seed/flood1/600/400',
-            'https://picsum.photos/seed/flood2/600/400',
-            'https://picsum.photos/seed/flood3/600/400',
-          ],
-        },
-        {
-          id: 'NO.1112',
-          date: '1/1/26 10:15',
-          location: 'ซอยลาดพร้าว 41',
-          type: 'ไฟไหม้',
-          urgency: 'high',
-          status: 'new',
-          images: [
-            'https://picsum.photos/seed/fire1/600/400',
-            'https://picsum.photos/seed/fire2/600/400',
-          ],
-        },
-        {
-          id: 'NO.1113',
-          date: '1/1/26 08:00',
-          location: 'ถนนพหลโยธิน กม.5',
-          type: 'อุบัติเหตุ',
-          urgency: 'mid',
-          status: 'assigned',
-          images: [
-            'https://picsum.photos/seed/acc1/600/400',
-            'https://picsum.photos/seed/acc2/600/400',
-            'https://picsum.photos/seed/acc3/600/400',
-            'https://picsum.photos/seed/acc4/600/400',
-          ],
-        },
-        {
-          id: 'NO.1110',
-          date: '31/12/25 14:00',
-          location: 'บ้านคลองสาน',
-          type: 'น้ำท่วม',
-          urgency: 'low',
-          status: 'done',
-          images: [
-            'https://picsum.photos/seed/done1/600/400',
-          ],
-        },
-      ],
+      tasks: [],
 
       todayStr: now.toLocaleDateString('th-TH', {
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
@@ -573,6 +553,12 @@ export default {
     },
     continueTask(task) {
       this.selectedTask = task
+      const urgencyMap = { low: 0, mid: 1, high: 2 }
+      this.fieldUrgency = urgencyMap[task.urgency] ?? 1
+      this.peopleCount = task.peopleCount || 0
+      this.contactName = task.contactName || ''
+      this.contactPhone = task.contactPhone || ''
+      this.needs.forEach(n => { n.checked = false })
       this.currentStep = 'detail'
     },
     doCheckin() {
@@ -1532,6 +1518,36 @@ export default {
 .tmodal-btn-close:hover {
   border-color: #aaa;
   color: #222;
+}
+
+.tmodal-phone-link {
+  color: #2563eb;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.tmodal-phone-link:hover {
+  text-decoration: underline;
+}
+
+.tmodal-needs-row {
+  align-items: flex-start;
+}
+
+.tmodal-needs-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tmodal-need-chip {
+  background: #fdf6d8;
+  border: 1.5px solid #f8d247;
+  color: #555859;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
 }
 
 .tmodal-fade-enter-active {
