@@ -640,7 +640,7 @@ export default {
       chartH: 90,
       chartPad: 12,
       showModal: false,
-      selectedIncident: null,
+      selectedIncidentId: null,
       lightboxImg: null,
       statusMap: {},
       statusSteps: [
@@ -705,6 +705,10 @@ export default {
   },
 
   computed: {
+    selectedIncident() {
+      if (!this.selectedIncidentId) return null
+      return this.allIncidents.find(i => i.id === this.selectedIncidentId) || null
+    },
     allIncidents() {
       return [...this.externalIncidents, ...this.mockIncidents].map(inc => {
         const override = this.statusMap[inc.id]
@@ -790,18 +794,16 @@ export default {
     },
 
     openIncident(inc) {
-      this.selectedIncident = { ...inc }
+      this.selectedIncidentId = inc.id
       this.showModal = true
     },
     closeModal() {
       this.showModal = false
+      this.selectedIncidentId = null
       this.lightboxImg = null
     },
     updateIncidentStatus(id, status) {
       this.$set(this.statusMap, id, status)
-      if (this.selectedIncident && this.selectedIncident.id === id) {
-        this.selectedIncident = { ...this.selectedIncident, status }
-      }
     },
     normalizeStatus(s) {
       if (s === 'received' || s === 'new') return 'new'
