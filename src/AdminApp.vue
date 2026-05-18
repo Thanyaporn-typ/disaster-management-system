@@ -570,6 +570,36 @@
               </div>
             </div>
 
+            <!-- Officer Work Result (shown when done) -->
+            <div v-if="selectedIncident.status === 'done' && selectedIncident.outcome" class="modal-result-sect">
+              <div class="modal-sect-title"><i class="bi bi-person-badge-fill"></i> ผลการปฏิบัติงานของเจ้าหน้าที่</div>
+              <div class="modal-result-grid">
+                <div class="mfield">
+                  <span class="mf-lbl">ผลการดำเนินการ</span>
+                  <span :class="['result-outcome-badge', selectedIncident.outcome]">
+                    <i :class="['bi', outcomeIcon(selectedIncident.outcome)]"></i>
+                    {{ outcomeLabel(selectedIncident.outcome) }}
+                  </span>
+                </div>
+                <div class="mfield" v-if="selectedIncident.checkinTime">
+                  <span class="mf-lbl">เวลาเช็คอิน</span>
+                  <span class="mf-val">{{ selectedIncident.checkinTime }}</span>
+                </div>
+                <div class="mfield" v-if="selectedIncident.closeTime">
+                  <span class="mf-lbl">เวลาปิดเคส</span>
+                  <span class="mf-val">{{ selectedIncident.closeTime }}</span>
+                </div>
+                <div class="mfield" v-if="selectedIncident.completionNote">
+                  <span class="mf-lbl">บันทึกการปฏิบัติงาน</span>
+                  <span class="mf-val result-note">{{ selectedIncident.completionNote }}</span>
+                </div>
+              </div>
+              <div v-if="selectedIncident.evidenceImage" class="result-evidence-wrap">
+                <div class="mf-lbl" style="margin-bottom:8px">รูปภาพหลักฐานการปฏิบัติงาน</div>
+                <img :src="selectedIncident.evidenceImage" class="result-evidence-img" @click="lightboxImg = selectedIncident.evidenceImage" alt="evidence" />
+              </div>
+            </div>
+
             <!-- Timeline -->
             <div class="modal-tl-sect">
               <div class="modal-sect-title"><i class="bi bi-clock-history"></i> ประวัติดำเนินการ</div>
@@ -717,14 +747,18 @@ export default {
     },
     incidentTimeline() {
       if (!this.selectedIncident) return []
-      const s = this.normalizeStatus(this.selectedIncident.status)
-      const date = this.selectedIncident.date || '—'
+      const inc = this.selectedIncident
+      const s = this.normalizeStatus(inc.status)
+      const date = inc.date || '—'
       const events = [{ label: 'รับเรื่องเข้าระบบ', time: date }]
       if (s === 'assigned' || s === 'done') {
         events.unshift({ label: 'มอบหมายเจ้าหน้าที่ภาคสนาม', time: date })
       }
+      if (inc.checkinTime) {
+        events.unshift({ label: 'เจ้าหน้าที่เช็คอิน ณ สถานที่เกิดเหตุ', time: inc.checkinTime })
+      }
       if (s === 'done') {
-        events.unshift({ label: 'ปิดเคสเรียบร้อยแล้ว', time: date })
+        events.unshift({ label: 'ปิดเคสเรียบร้อยแล้ว', time: inc.closeTime || date })
       }
       return events
     },
@@ -762,6 +796,12 @@ export default {
   },
 
   methods: {
+    outcomeLabel(key) {
+      return { resolved: 'แก้ไขสำเร็จ', transferred: 'ส่งต่อโรงพยาบาล', evacuated: 'อพยพแล้ว', pending: 'รอหน่วยสนับสนุน' }[key] || key
+    },
+    outcomeIcon(key) {
+      return { resolved: 'bi-check-circle-fill', transferred: 'bi-truck-front-fill', evacuated: 'bi-bus-front-fill', pending: 'bi-hourglass-split' }[key] || 'bi-circle'
+    },
     urgencyText(u) { return { low: 'ปกติ', mid: 'ด่วน', high: 'ด่วนมาก' }[u] || u },
     statusText(s) {
       return { new: 'รับเรื่อง', assigned: 'ดำเนินการ', done: 'เสร็จสิ้น', received: 'รับเรื่อง', processing: 'ดำเนินการ' }[s] || s
@@ -1603,6 +1643,49 @@ export default {
 
 /* Timeline */
 .modal-tl-sect { }
+
+.modal-result-sect {
+  border: 1.5px solid #e0e7ff;
+  border-radius: 12px;
+  padding: 14px 16px;
+  background: #f8faff;
+  margin-bottom: 4px;
+}
+.modal-result-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.result-outcome-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.result-outcome-badge.resolved  { background: #dcfce7; color: #166534; }
+.result-outcome-badge.transferred { background: #dbeafe; color: #1e40af; }
+.result-outcome-badge.evacuated { background: #fef9c3; color: #854d0e; }
+.result-outcome-badge.pending   { background: #fef3c7; color: #92400e; }
+.result-note {
+  white-space: pre-line;
+  color: #555859;
+}
+.result-evidence-wrap {
+  margin-top: 12px;
+}
+.result-evidence-img {
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.result-evidence-img:hover { opacity: 0.88; }
+
 .modal-tl {
   display: flex; flex-direction: column; gap: 0;
   margin-top: 10px;

@@ -52,6 +52,7 @@
 
     <CitizenApp
       v-if="mode === 'citizen'"
+      :submitted-reports="sharedTasks"
       @report-submitted="handleNewReport"
     />
     <FieldOfficerApp

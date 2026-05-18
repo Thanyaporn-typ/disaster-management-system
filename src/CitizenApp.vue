@@ -367,7 +367,7 @@
           >
             <span class="tab-dot" :class="tab.key"></span>
             {{ tab.label }}
-            <span class="tab-count">{{ cases.filter(c => c.status === tab.key).length }}</span>
+            <span class="tab-count">{{ cases.filter(c => caseStatus(c.status) === tab.key).length }}</span>
           </button>
           <button :class="['filter-tab', activeTab === 'all' ? 'active' : '']" @click="activeTab = 'all'">
             ทั้งหมด <span class="tab-count">{{ cases.length }}</span>
@@ -396,8 +396,8 @@
                   <span :class="['urgency-badge', c.urgency]">{{ urgencyText(c.urgency) }}</span>
                 </td>
                 <td data-label="สถานะ">
-                  <span :class="['status-pill', c.status]">
-                    <span class="pill-dot"></span>{{ statusLabel(c.status) }}
+                  <span :class="['status-pill', caseStatus(c.status)]">
+                    <span class="pill-dot"></span>{{ statusLabel(caseStatus(c.status)) }}
                   </span>
                 </td>
                 <td data-label="">
@@ -422,10 +422,10 @@
               <div
                 class="progress-bar-fill"
                 :class="tab.key"
-                :style="{ width: (cases.filter(c => c.status === tab.key).length / cases.length * 100) + '%' }"
+                :style="{ width: (cases.filter(c => caseStatus(c.status) === tab.key).length / cases.length * 100) + '%' }"
               ></div>
             </div>
-            <span class="progress-count">{{ cases.filter(c => c.status === tab.key).length }}</span>
+            <span class="progress-count">{{ cases.filter(c => caseStatus(c.status) === tab.key).length }}</span>
           </div>
         </div>
       </div>
@@ -461,8 +461,8 @@
             <div class="modal-info-item">
               <div class="modal-info-label"><i class="bi bi-flag-fill"></i> สถานะ</div>
               <div class="modal-info-val">
-                <span :class="['status-pill', selectedCase.status]">
-                  <span class="pill-dot"></span>{{ statusLabel(selectedCase.status) }}
+                <span :class="['status-pill', caseStatus(selectedCase.status)]">
+                  <span class="pill-dot"></span>{{ statusLabel(caseStatus(selectedCase.status)) }}
                 </span>
               </div>
             </div>
@@ -472,25 +472,54 @@
           <div class="modal-timeline">
             <div class="modal-tl-item">
               <div class="modal-tl-dot done"></div>
-              <div class="modal-tl-line" :class="{ done: selectedCase.status === 'processing' || selectedCase.status === 'done' }"></div>
+              <div class="modal-tl-line" :class="{ done: caseStatus(selectedCase.status) === 'processing' || caseStatus(selectedCase.status) === 'done' }"></div>
               <div class="modal-tl-content">
                 <div class="modal-tl-label done">รับเรื่อง</div>
                 <div class="modal-tl-time">{{ selectedCase.date }}</div>
               </div>
             </div>
             <div class="modal-tl-item">
-              <div class="modal-tl-dot" :class="{ done: selectedCase.status === 'processing' || selectedCase.status === 'done' }"></div>
-              <div class="modal-tl-line" :class="{ done: selectedCase.status === 'done' }"></div>
+              <div class="modal-tl-dot" :class="{ done: caseStatus(selectedCase.status) === 'processing' || caseStatus(selectedCase.status) === 'done' }"></div>
+              <div class="modal-tl-line" :class="{ done: caseStatus(selectedCase.status) === 'done' }"></div>
               <div class="modal-tl-content">
-                <div class="modal-tl-label" :class="{ done: selectedCase.status === 'processing' || selectedCase.status === 'done' }">กำลังดำเนินการ</div>
-                <div class="modal-tl-time">{{ selectedCase.status === 'processing' || selectedCase.status === 'done' ? 'อยู่ระหว่างดำเนินการ' : 'รอดำเนินการ' }}</div>
+                <div class="modal-tl-label" :class="{ done: caseStatus(selectedCase.status) === 'processing' || caseStatus(selectedCase.status) === 'done' }">กำลังดำเนินการ</div>
+                <div class="modal-tl-time">{{ caseStatus(selectedCase.status) === 'processing' || caseStatus(selectedCase.status) === 'done' ? 'อยู่ระหว่างดำเนินการ' : 'รอดำเนินการ' }}</div>
               </div>
             </div>
             <div class="modal-tl-item last">
-              <div class="modal-tl-dot" :class="{ done: selectedCase.status === 'done' }"></div>
+              <div class="modal-tl-dot" :class="{ done: caseStatus(selectedCase.status) === 'done' }"></div>
               <div class="modal-tl-content">
-                <div class="modal-tl-label" :class="{ done: selectedCase.status === 'done' }">เสร็จสิ้น</div>
-                <div class="modal-tl-time">{{ selectedCase.status === 'done' ? 'ดำเนินการเสร็จสิ้นแล้ว' : 'รอดำเนินการ' }}</div>
+                <div class="modal-tl-label" :class="{ done: caseStatus(selectedCase.status) === 'done' }">เสร็จสิ้น</div>
+                <div class="modal-tl-time">{{ caseStatus(selectedCase.status) === 'done' ? 'ดำเนินการเสร็จสิ้นแล้ว' : 'รอดำเนินการ' }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ผลการปฏิบัติงานของเจ้าหน้าที่ (แสดงเมื่อเคสเสร็จสิ้น) -->
+          <div v-if="caseStatus(selectedCase.status) === 'done'" class="modal-result-sect">
+            <div class="modal-section-title">ผลการปฏิบัติงานของเจ้าหน้าที่</div>
+            <div class="modal-result-card">
+              <div class="modal-result-row">
+                <span class="modal-result-label"><i class="bi bi-flag-fill"></i> ผลการดำเนินการ</span>
+                <span class="modal-result-outcome" :class="selectedCase.outcome || 'resolved'">
+                  {{ outcomeLabel(selectedCase.outcome) }}
+                </span>
+              </div>
+              <div class="modal-result-row" v-if="selectedCase.checkinTime">
+                <span class="modal-result-label"><i class="bi bi-geo-alt-fill"></i> เวลาเช็คอิน</span>
+                <span class="modal-result-val">{{ selectedCase.checkinTime }}</span>
+              </div>
+              <div class="modal-result-row" v-if="selectedCase.closeTime">
+                <span class="modal-result-label"><i class="bi bi-clock-fill"></i> เวลาปิดเคส</span>
+                <span class="modal-result-val">{{ selectedCase.closeTime }}</span>
+              </div>
+              <div class="modal-result-note" v-if="selectedCase.completionNote">
+                <div class="modal-result-label"><i class="bi bi-chat-left-text-fill"></i> บันทึกการปฏิบัติงาน</div>
+                <div class="modal-result-note-body">{{ selectedCase.completionNote }}</div>
+              </div>
+              <div class="modal-result-img-wrap" v-if="selectedCase.evidenceImage">
+                <div class="modal-result-label"><i class="bi bi-camera-fill"></i> รูปภาพหลักฐาน</div>
+                <img :src="selectedCase.evidenceImage" class="modal-result-img" alt="หลักฐาน" />
               </div>
             </div>
           </div>
@@ -517,6 +546,12 @@
 <script>
 export default {
   name: 'CitizenApp',
+  props: {
+    submittedReports: {
+      type: Array,
+      default: () => [],
+    },
+  },
   data() {
     return {
       currentView: 'landing',
@@ -547,9 +582,9 @@ export default {
         { key: 'processing', label: 'กำลังดำเนินการ' },
         { key: 'done', label: 'เสร็จสิ้น' },
       ],
-      cases: [
-        { id: 'NO.1111', date: '1/1/2569', location: 'บ้านเก่า ลาดกระบัง', urgency: 'high', status: 'received' },
-        { id: 'NO.1098', date: '28/12/2568', location: 'ตลาดเช้า นครปฐม', urgency: 'mid', status: 'processing' },
+      demoCases: [
+        { id: 'NO.1111', date: '1/1/2569', location: 'บ้านเก่า ลาดกระบัง', urgency: 'high', status: 'new' },
+        { id: 'NO.1098', date: '28/12/2568', location: 'ตลาดเช้า นครปฐม', urgency: 'mid', status: 'assigned' },
         { id: 'NO.1045', date: '15/12/2568', location: 'โรงเรียนบ้านท่า', urgency: 'low', status: 'done' },
         { id: 'NO.1032', date: '10/12/2568', location: 'ชุมชนริมคลอง', urgency: 'high', status: 'done' },
       ],
@@ -567,9 +602,12 @@ export default {
     }
   },
   computed: {
+    cases() {
+      return [...this.submittedReports, ...this.demoCases]
+    },
     filteredCases() {
       if (this.activeTab === 'all') return this.cases
-      return this.cases.filter(c => c.status === this.activeTab)
+      return this.cases.filter(c => this.caseStatus(c.status) === this.activeTab)
     },
   },
   methods: {
@@ -609,10 +647,6 @@ export default {
         description: this.form.description || '',
         images: [...this.previewImages],
       }
-      this.cases.unshift({
-        id: report.id, date: dateStr,
-        location: report.location, urgency: report.urgency, status: 'received',
-      })
       this.$emit('report-submitted', report)
       this.currentView = 'confirm'
     },
@@ -620,11 +654,17 @@ export default {
       this.selectedCase = c
       this.showDetailModal = true
     },
+    caseStatus(s) {
+      return { new: 'received', assigned: 'processing', done: 'done' }[s] || 'received'
+    },
     statusLabel(s) {
       return { received: 'รับเรื่อง', processing: 'กำลังดำเนินการ', done: 'เสร็จสิ้น' }[s]
     },
     urgencyText(u) {
       return { low: 'น้อย', mid: 'ปานกลาง', high: 'ด่วนมาก' }[u]
+    },
+    outcomeLabel(o) {
+      return { resolved: 'แก้ไขสำเร็จ', transferred: 'ส่งต่อโรงพยาบาล', evacuated: 'อพยพแล้ว', pending: 'รอหน่วยสนับสนุน' }[o] || 'เสร็จสิ้น'
     },
   },
 }
@@ -2278,6 +2318,9 @@ export default {
   border-radius: 20px;
   width: 100%;
   max-width: 520px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.2);
   overflow: hidden;
   animation: modal-in 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -2334,7 +2377,7 @@ export default {
 
 .modal-close:hover { border-color: #ccc; color: #333; background: #f5f5f5; }
 
-.modal-body { padding: 24px; }
+.modal-body { padding: 24px; overflow-y: auto; flex: 1; }
 
 .modal-info-grid {
   display: grid;
@@ -2438,6 +2481,83 @@ export default {
 .modal-tl-time {
   font-size: 12px;
   color: #bbb;
+}
+
+.modal-result-sect { margin-top: 4px; }
+
+.modal-result-card {
+  background: #f0fdf4;
+  border: 1.5px solid #86efac;
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.modal-result-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.modal-result-label {
+  color: #555;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.modal-result-val {
+  font-weight: 700;
+  color: #166534;
+  font-size: 13px;
+}
+
+.modal-result-outcome {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #166534;
+}
+
+.modal-result-outcome.transferred,
+.modal-result-outcome.evacuated {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.modal-result-outcome.pending {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.modal-result-note { font-size: 13px; }
+
+.modal-result-note-body {
+  margin-top: 6px;
+  background: #fff;
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #374151;
+  font-size: 13px;
+  line-height: 1.6;
+  border: 1px solid #bbf7d0;
+}
+
+.modal-result-img-wrap { font-size: 13px; }
+
+.modal-result-img {
+  margin-top: 8px;
+  width: 100%;
+  border-radius: 10px;
+  object-fit: cover;
+  max-height: 200px;
+  border: 1px solid #bbf7d0;
 }
 
 .modal-footer {

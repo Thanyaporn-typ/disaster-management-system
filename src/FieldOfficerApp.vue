@@ -38,7 +38,7 @@
         </div>
         <div class="task-tabs">
           <button v-for="tab in taskTabs" :key="tab.key" :class="['task-tab', activeTaskTab === tab.key ? 'active' : '']"
-            @click="activeTaskTab = tab.key; tab.key === 'new' && (newAlertCount = 0)">
+            @click="activeTaskTab = tab.key">
             {{ tab.label }}
             <span class="task-tab-count">{{ tasksByTab(tab.key).length }}</span>
             <span class="new-dot" v-if="tab.key === 'new' && newAlertCount > 0">{{ newAlertCount }}</span>
@@ -52,7 +52,7 @@
           <span class="banner-pulse"></span>
           <span class="banner-msg"><i class="bi bi-exclamation-octagon-fill"></i> มีเหตุการณ์ใหม่ {{ newAlertCount }}
             รายการ เข้ามา!</span>
-          <button class="banner-btn" @click="activeTaskTab = 'new'; newAlertCount = 0">ดูเลย →</button>
+          <button class="banner-btn" @click="activeTaskTab = 'new'">ดูเลย →</button>
         </div>
       </transition>
 
@@ -197,7 +197,7 @@
           </div>
         </div>
 
-        <button class="btn-primary-full" @click="currentStep = 'checkin'">
+        <button class="btn-primary-full" @click="startCheckin">
           <i class="bi bi-geo-alt-fill"></i> เช็คอินสถานที่ปฏิบัติงาน
         </button>
       </div>
@@ -461,8 +461,7 @@ export default {
       handler(newList) {
         newList.forEach(task => {
           if (!this.tasks.find(t => t.id === task.id)) {
-            this.tasks.unshift({ ...task })
-            this.newAlertCount++
+            this.tasks.unshift(task)
           }
         })
       },
@@ -474,7 +473,6 @@ export default {
       currentStep: 'tasks',
       activeTaskTab: 'new',
       selectedTask: null,
-      newAlertCount: 0,
       fieldUrgency: 1,
       peopleCount: 0,
       contactName: '',
@@ -534,6 +532,9 @@ export default {
       const o = this.outcomes.find(o => o.key === this.selectedOutcome)
       return o ? o.icon : ''
     },
+    newAlertCount() {
+      return this.tasks.filter(t => t.status === 'new').length
+    },
   },
   methods: {
     openTaskModal(task) {
@@ -561,9 +562,12 @@ export default {
       this.needs.forEach(n => { n.checked = false })
       this.currentStep = 'detail'
     },
-    doCheckin() {
+    startCheckin() {
       const now = new Date()
       this.checkinTime = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
+      this.currentStep = 'checkin'
+    },
+    doCheckin() {
       this.currentStep = 'complete'
     },
     triggerEvidenceUpload() {
@@ -579,7 +583,15 @@ export default {
     submitCase() {
       const now = new Date()
       this.closeTime = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
-      if (this.selectedTask) this.selectedTask.status = 'done'
+      if (this.selectedTask) {
+        this.selectedTask.status = 'done'
+        this.selectedTask.outcome = this.selectedOutcome
+        this.selectedTask.completionNote = this.completionNote
+        this.selectedTask.evidenceImage = this.evidenceImage
+        this.selectedTask.checkinTime = this.checkinTime
+        this.selectedTask.closeTime = this.closeTime
+        this.selectedTask.fieldUrgency = ['low', 'mid', 'high'][this.fieldUrgency]
+      }
       this.currentStep = 'success'
     },
     backToTasks() {
