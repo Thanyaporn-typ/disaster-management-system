@@ -44,7 +44,7 @@ See [Configuration Reference](https://cli.vuejs.org/config/)
 
 ```bash
 git add .
-git commit -m "edit : version"
+git commit -m "edit : fix bug"
 git push
 ```
 

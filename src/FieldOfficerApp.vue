@@ -480,6 +480,12 @@ export default {
         })
       },
     },
+    currentStep() {
+      this.$nextTick(() => window.scrollTo({ top: 0, behavior: 'instant' }))
+    },
+    activeTaskTab() {
+      this.$nextTick(() => window.scrollTo({ top: 0, behavior: 'instant' }))
+    },
   },
   data() {
     const now = new Date()
