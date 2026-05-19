@@ -47,7 +47,7 @@
           v-for="v in views"
           :key="v.key"
           :class="['sidebar-item', activeView === v.key ? 'active' : '']"
-          @click="activeView = v.key; showAlerts = false"
+          @click="setView(v.key)"
         >
           <span class="sidebar-icon"><i :class="['bi', v.icon]"></i></span>
           <span class="sidebar-label">{{ v.label }}</span>
@@ -55,7 +55,7 @@
       </aside>
 
       <!-- ══ Main Content ══ -->
-      <main class="admin-main">
+      <main class="admin-main" ref="mainContent">
 
         <!-- ─── OVERVIEW ─── -->
         <div v-if="activeView === 'overview'" class="view-overview">
@@ -827,6 +827,14 @@ export default {
   },
 
   methods: {
+    setView(key) {
+      this.activeView = key
+      this.showAlerts = false
+      this.$nextTick(() => {
+        if (this.$refs.mainContent) this.$refs.mainContent.scrollTop = 0
+        window.scrollTo({ top: 0, behavior: 'instant' })
+      })
+    },
     outcomeLabel(key) {
       return { resolved: 'แก้ไขสำเร็จ', transferred: 'ส่งต่อโรงพยาบาล', evacuated: 'อพยพแล้ว', pending: 'รอหน่วยสนับสนุน' }[key] || key
     },

@@ -58,7 +58,7 @@
           </span>
         </div>
         <div class="drawer-footer">
-          <button class="drawer-report-btn" @click="currentView = 'form'; mobileMenuOpen = false">
+          <button class="drawer-report-btn" @click="goToForm(); mobileMenuOpen = false">
             <i class="bi bi-exclamation-octagon-fill"></i> แจ้งเหตุด่วน
           </button>
         </div>
@@ -75,7 +75,7 @@
           <div class="hero-badge">ระบบรายงานเหตุฉุกเฉิน</div>
           <h1 class="hero-title">แจ้งเหตุภัยพิบัติ<br />ได้ทุกที่ ทุกเวลา</h1>
           <p class="hero-sub">ระบบรับแจ้งเหตุและติดตามสถานะการช่วยเหลือสำหรับประชาชน<br />เชื่อมต่อกับเจ้าหน้าที่ผู้รับผิดชอบโดยตรง</p>
-          <button class="btn-hero" @click="currentView = 'form'">
+          <button class="btn-hero" @click="goToForm()">
             กดแจ้งเหตุ
           </button>
         </div>
@@ -150,7 +150,7 @@
       <section class="cta-section">
         <h2 class="cta-title">พร้อมให้ความช่วยเหลือทันที</h2>
         <p class="cta-sub">หากพบเหตุฉุกเฉินหรือต้องการความช่วยเหลือ กดปุ่มด้านล่างได้เลย</p>
-        <button class="btn-hero" @click="currentView = 'form'">
+        <button class="btn-hero" @click="goToForm()">
           แจ้งเหตุตอนนี้
         </button>
       </section>
@@ -352,7 +352,7 @@
         <div class="page-header-inner">
           <button class="back-btn" @click="currentView = 'landing'"><i class="bi bi-arrow-left"></i> กลับ</button>
           <h1 class="page-title">ประวัติการแจ้งเหตุ</h1>
-          <button class="btn-new" @click="currentView = 'form'"><i class="bi bi-plus-lg"></i> แจ้งเหตุใหม่</button>
+          <button class="btn-new" @click="goToForm()"><i class="bi bi-plus-lg"></i> แจ้งเหตุใหม่</button>
         </div>
       </div>
 
@@ -624,6 +624,10 @@ export default {
     },
   },
   methods: {
+    goToForm() {
+      this.currentView = 'form'
+      this.$nextTick(() => window.scrollTo({ top: 0, behavior: 'smooth' }))
+    },
     triggerUpload() { this.$refs.fileInput.click() },
     handleImage(e) {
       const file = e.target.files[0]
