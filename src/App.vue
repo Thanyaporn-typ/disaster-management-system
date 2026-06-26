@@ -54,15 +54,20 @@
     <CitizenApp
       v-if="mode === 'citizen'"
       :submitted-reports="sharedTasks"
+      :shared-shelters="sharedShelters"
       @report-submitted="handleNewReport"
     />
     <FieldOfficerApp
       v-if="mode === 'officer'"
       :external-tasks="sharedTasks"
+      :shared-shelters="sharedShelters"
+      @shelters-updated="sharedShelters = $event"
     />
     <AdminApp
       v-if="mode === 'admin'"
       :external-incidents="sharedTasks"
+      :shared-shelters="sharedShelters"
+      @shelters-updated="sharedShelters = $event"
     />
   </div>
 </template>
@@ -84,6 +89,16 @@ export default {
       newTaskCount: 0,
       toast: null,
       toastTimer: null,
+      sharedShelters: [
+        { id: 1, name: 'โรงเรียนวัดสีลม', lat: 13.7260, lng: 100.5290, capacity: 200, available: true, tags: ['มีอาหาร/น้ำ'], icon: 'bi-building' },
+        { id: 2, name: 'ศาลาประชาคมเขตบางรัก', lat: 13.7240, lng: 100.5270, capacity: 150, available: false, tags: ['มีอาหาร/น้ำ'], icon: 'bi-bank' },
+        { id: 3, name: 'วัดยานนาวา', lat: 13.7180, lng: 100.5220, capacity: 300, available: true, tags: ['ที่พักพิง', 'น้ำดื่ม'], icon: 'bi-house-fill' },
+        { id: 4, name: 'โรงเรียนสาธิตจุฬาลงกรณ์', lat: 13.7380, lng: 100.5310, capacity: 500, available: true, tags: ['มีอาหาร/น้ำ', 'พยาบาล'], icon: 'bi-building' },
+        { id: 5, name: 'ศูนย์กีฬาเขตสาทร', lat: 13.7200, lng: 100.5250, capacity: 400, available: true, tags: ['มีอาหาร/น้ำ', 'ห้องน้ำ'], icon: 'bi-buildings' },
+        { id: 6, name: 'วัดปทุมวนาราม', lat: 13.7450, lng: 100.5330, capacity: 250, available: false, tags: ['ที่พักพิง'], icon: 'bi-house-fill' },
+        { id: 7, name: 'หอประชุมเขตลาดกระบัง', lat: 13.7260, lng: 100.5310, capacity: 600, available: true, tags: ['มีอาหาร/น้ำ', 'พยาบาล', 'ห้องน้ำ'], icon: 'bi-buildings' },
+        { id: 8, name: 'โรงเรียนบ้านท่าข้าม', lat: 13.7150, lng: 100.5200, capacity: 180, available: true, tags: ['น้ำดื่ม'], icon: 'bi-building' },
+      ],
     }
   },
   methods: {

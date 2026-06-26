@@ -497,8 +497,147 @@
 
         </div>
 
+        <!-- ─── SHELTERS ─── -->
+        <div v-if="false && activeView === 'shelters'" class="view-shelters">
+          <div class="view-header">
+            <h2 class="view-title">จุดพักพิง / ศูนย์อพยพ</h2>
+            <button class="btn-primary-sm" @click="openAddShelter">
+              <i class="bi bi-plus-lg"></i> เพิ่มจุดพักพิง
+            </button>
+          </div>
+
+          <div class="shelter-stats-row">
+            <div class="shelter-stat-card">
+              <div class="shelter-stat-num">{{ localShelters.length }}</div>
+              <div class="shelter-stat-label">ทั้งหมด</div>
+            </div>
+            <div class="shelter-stat-card">
+              <div class="shelter-stat-num" style="color:#22c55e">{{ localShelters.filter(s => s.available).length }}</div>
+              <div class="shelter-stat-label">ว่าง</div>
+            </div>
+            <div class="shelter-stat-card">
+              <div class="shelter-stat-num" style="color:#ef4444">{{ localShelters.filter(s => !s.available).length }}</div>
+              <div class="shelter-stat-label">เต็ม</div>
+            </div>
+            <div class="shelter-stat-card">
+              <div class="shelter-stat-num">{{ localShelters.reduce((a, s) => a + s.capacity, 0).toLocaleString() }}</div>
+              <div class="shelter-stat-label">ความจุรวม (คน)</div>
+            </div>
+          </div>
+
+          <div class="card shelter-table-card">
+            <div class="table-wrap shelter-table-wrap">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>ชื่อสถานที่</th>
+                    <th>ความจุ</th>
+                    <th>พิกัด</th>
+                    <th>บริการ</th>
+                    <th>สถานะ</th>
+                    <th>จัดการ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="s in localShelters" :key="s.id">
+                    <td>
+                      <div class="shelter-name-cell">
+                        <i :class="['bi', s.icon, 'shelter-icon-sm']"></i>
+                        {{ s.name }}
+                      </div>
+                    </td>
+                    <td>{{ s.capacity.toLocaleString() }} คน</td>
+                    <td class="coord-cell">{{ s.lat }}, {{ s.lng }}</td>
+                    <td>
+                      <div class="shelter-tags-cell">
+                        <span v-for="tag in s.tags" :key="tag" class="admin-shelter-tag">{{ tag }}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <button
+                        :class="['toggle-status-sm', s.available ? 'available' : 'full']"
+                        @click="toggleShelterAvailable(s)"
+                      >{{ s.available ? 'ว่าง' : 'เต็ม' }}</button>
+                    </td>
+                    <td>
+                      <div class="action-btns">
+                        <button class="btn-xs" @click="openEditShelter(s)"><i class="bi bi-pencil-fill"></i></button>
+                        <button class="btn-xs danger" @click="deleteShelter(s.id)"><i class="bi bi-trash-fill"></i></button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
       </main>
     </div>
+
+    <!-- Shelter Form Modal -->
+    <transition name="modal-fade">
+      <div class="admin-modal-overlay" v-if="showShelterModal" @click.self="showShelterModal = false">
+        <div class="admin-modal">
+          <div class="admin-modal-hd">
+            <h3>{{ editingShelter ? 'แก้ไขจุดพักพิง' : 'เพิ่มจุดพักพิงใหม่' }}</h3>
+            <button class="admin-modal-close" @click="showShelterModal = false"><i class="bi bi-x-lg"></i></button>
+          </div>
+          <div class="admin-modal-body">
+            <div class="sf-grid">
+              <div class="sf-group">
+                <label class="sf-label">ชื่อสถานที่ <span class="sf-req">*</span></label>
+                <input class="sf-input" v-model="shelterForm.name" placeholder="เช่น โรงเรียนวัดสีลม" />
+              </div>
+              <div class="sf-group">
+                <label class="sf-label">ความจุ (คน) <span class="sf-req">*</span></label>
+                <input class="sf-input" type="number" v-model.number="shelterForm.capacity" min="1" />
+              </div>
+              <div class="sf-group">
+                <label class="sf-label">ละติจูด</label>
+                <input class="sf-input" type="number" step="0.0001" v-model.number="shelterForm.lat" />
+              </div>
+              <div class="sf-group">
+                <label class="sf-label">ลองจิจูด</label>
+                <input class="sf-input" type="number" step="0.0001" v-model.number="shelterForm.lng" />
+              </div>
+            </div>
+            <div class="sf-group">
+              <label class="sf-label">ประเภทไอคอน</label>
+              <div class="sf-icon-row">
+                <label v-for="ic in shelterIcons" :key="ic.key" class="sf-icon-opt">
+                  <input type="radio" :value="ic.key" v-model="shelterForm.icon" hidden />
+                  <span :class="['sf-icon-box', shelterForm.icon === ic.key ? 'selected' : '']">
+                    <i :class="['bi', ic.key]"></i>
+                    <span>{{ ic.label }}</span>
+                  </span>
+                </label>
+              </div>
+            </div>
+            <div class="sf-group">
+              <label class="sf-label">บริการที่มี</label>
+              <div class="sf-tags-grid">
+                <label v-for="tag in availableTags" :key="tag" class="sf-tag-check">
+                  <input type="checkbox" :value="tag" v-model="shelterForm.tags" hidden />
+                  <span :class="['sf-tag-box', shelterForm.tags.includes(tag) ? 'checked' : '']">{{ tag }}</span>
+                </label>
+              </div>
+            </div>
+            <div class="sf-group">
+              <label class="sf-label">สถานะเริ่มต้น</label>
+              <div class="sf-status-row">
+                <button :class="['sf-status-btn', shelterForm.available ? 'active-available' : '']" @click="shelterForm.available = true">ว่าง</button>
+                <button :class="['sf-status-btn', !shelterForm.available ? 'active-full' : '']" @click="shelterForm.available = false">เต็ม</button>
+              </div>
+            </div>
+          </div>
+          <div class="admin-modal-ft">
+            <button class="btn-cancel" @click="showShelterModal = false">ยกเลิก</button>
+            <button class="btn-save" @click="saveShelter"><i class="bi bi-floppy-fill"></i> บันทึก</button>
+          </div>
+        </div>
+      </div>
+    </transition>
 
     <!-- Footer -->
     <footer class="admin-footer">
@@ -671,10 +810,19 @@ export default {
   name: 'AdminApp',
   props: {
     externalIncidents: { type: Array, default: () => [] },
+    sharedShelters: { type: Array, default: () => [] },
   },
   watch: {
     externalIncidents(val) {
       this.newAlerts = val.length
+    },
+    sharedShelters: {
+      immediate: true,
+      handler(list) {
+        if (list.length && !this.localShelters.length) {
+          this.localShelters = list.map(s => ({ ...s }))
+        }
+      },
     },
   },
   data() {
@@ -682,6 +830,17 @@ export default {
     return {
       activeView: 'overview',
       showAlerts: false,
+      localShelters: [],
+      showShelterModal: false,
+      editingShelter: null,
+      shelterForm: { name: '', capacity: 100, lat: 13.7563, lng: 100.5018, tags: [], available: true, icon: 'bi-building' },
+      availableTags: ['มีอาหาร/น้ำ', 'น้ำดื่ม', 'ที่พักพิง', 'ห้องน้ำ', 'พยาบาล'],
+      shelterIcons: [
+        { key: 'bi-building', label: 'โรงเรียน' },
+        { key: 'bi-buildings', label: 'ศูนย์กีฬา' },
+        { key: 'bi-house-fill', label: 'วัด/ศาลา' },
+        { key: 'bi-bank', label: 'หน่วยงานรัฐ' },
+      ],
       newAlerts: 0,
       searchQ: '',
       filterUrgency: 'all',
@@ -714,6 +873,7 @@ export default {
         { key: 'overview',  icon: 'bi-bar-chart-line-fill', label: 'ภาพรวมทั้งหมด' },
         { key: 'incidents', icon: 'bi-clipboard2-data-fill', label: 'ข้อมูลแจ้งเหตุ' },
         { key: 'map',       icon: 'bi-map-fill',            label: 'กำหนดพื้นที่เสี่ยงภัย' },
+        // { key: 'shelters',  icon: 'bi-house-fill',           label: 'จุดพักพิง' },
         { key: 'config',    icon: 'bi-gear-fill',           label: 'กำหนดข้อมูลหลัก' },
       ],
 
@@ -846,6 +1006,35 @@ export default {
       return { new: 'รับเรื่อง', assigned: 'ดำเนินการ', done: 'เสร็จสิ้น', received: 'รับเรื่อง', processing: 'ดำเนินการ' }[s] || s
     },
     zoneLevelText(l) { return { high: 'เสี่ยงสูง', medium: 'เสี่ยงกลาง', low: 'เสี่ยงต่ำ' }[l] || l },
+    openAddShelter() {
+      this.editingShelter = null
+      this.shelterForm = { name: '', capacity: 100, lat: 13.7563, lng: 100.5018, tags: [], available: true, icon: 'bi-building' }
+      this.showShelterModal = true
+    },
+    openEditShelter(s) {
+      this.editingShelter = s
+      this.shelterForm = { ...s, tags: [...s.tags] }
+      this.showShelterModal = true
+    },
+    saveShelter() {
+      if (!this.shelterForm.name || !this.shelterForm.capacity) return
+      if (this.editingShelter) {
+        const idx = this.localShelters.findIndex(s => s.id === this.editingShelter.id)
+        if (idx !== -1) this.localShelters.splice(idx, 1, { ...this.shelterForm })
+      } else {
+        this.localShelters.push({ ...this.shelterForm, id: Date.now() })
+      }
+      this.showShelterModal = false
+      this.$emit('shelters-updated', this.localShelters.map(s => ({ ...s })))
+    },
+    deleteShelter(id) {
+      this.localShelters = this.localShelters.filter(s => s.id !== id)
+      this.$emit('shelters-updated', this.localShelters.map(s => ({ ...s })))
+    },
+    toggleShelterAvailable(s) {
+      s.available = !s.available
+      this.$emit('shelters-updated', this.localShelters.map(s => ({ ...s })))
+    },
 
     linePoints(key) {
       const W = 300 - this.chartPad * 2
@@ -1418,6 +1607,256 @@ export default {
 .active-badge.on  { background: #dcfce7; color: #16a34a; }
 .active-badge.off { background: #f3f4f6; color: #9ca3af; }
 
+/* ── Shelters View ── */
+.view-shelters { display: flex; flex-direction: column; gap: 20px; }
+
+.btn-primary-sm {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  background: #555859;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.2s;
+}
+.btn-primary-sm:hover { opacity: 0.85; }
+
+.shelter-stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.shelter-stat-card {
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  padding: 16px 20px;
+  text-align: center;
+}
+
+.shelter-stat-num {
+  font-size: 28px;
+  font-weight: 800;
+  color: #555859;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.shelter-stat-label { font-size: 12px; color: #888; }
+
+.shelter-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.shelter-icon-sm { font-size: 16px; color: #555859; }
+
+.coord-cell { font-size: 11px; color: #888; }
+
+.shelter-tags-cell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.admin-shelter-tag {
+  font-size: 11px;
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.shelter-table-card { padding: 0; overflow: hidden; }
+.shelter-table-wrap { overflow-x: auto; }
+
+.toggle-status-sm {
+  padding: 4px 12px;
+  border-radius: 6px;
+  border: none;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.toggle-status-sm.available { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+.toggle-status-sm.full      { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+
+.action-btns { display: flex; gap: 6px; }
+
+/* ── Shelter Modal ── */
+.admin-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 500;
+  padding: 20px;
+}
+
+.admin-modal {
+  background: #fff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.2);
+  overflow: hidden;
+}
+
+.admin-modal-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid #f0f0f0;
+  background: #f8f9fc;
+}
+
+.admin-modal-hd h3 { font-size: 17px; font-weight: 700; color: #555859; margin: 0; }
+
+.admin-modal-close {
+  background: none;
+  border: 1.5px solid #e8e8e8;
+  border-radius: 7px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 13px;
+  color: #888;
+}
+
+.admin-modal-close:hover { border-color: #ccc; color: #333; }
+
+.admin-modal-body { padding: 20px 24px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 14px; }
+
+.sf-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.sf-group { display: flex; flex-direction: column; gap: 6px; }
+.sf-label { font-size: 12px; font-weight: 700; color: #555; }
+.sf-req { color: #ef4444; }
+
+.sf-input {
+  border: 1.5px solid #e8e8e8;
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  color: #333;
+  outline: none;
+  transition: border-color 0.15s;
+  width: 100%;
+}
+
+.sf-input:focus { border-color: #555859; }
+
+.sf-icon-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.sf-icon-opt { cursor: pointer; }
+
+.sf-icon-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 14px;
+  border: 1.5px solid #e8e8e8;
+  border-radius: 10px;
+  font-size: 11px;
+  color: #555;
+  transition: all 0.15s;
+  background: #fff;
+}
+
+.sf-icon-box i { font-size: 20px; }
+.sf-icon-box.selected { border-color: #555859; background: #f3f4f6; color: #333; font-weight: 700; }
+
+.sf-tags-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.sf-tag-check { cursor: pointer; }
+
+.sf-tag-box {
+  display: inline-block;
+  padding: 5px 12px;
+  border: 1.5px solid #e8e8e8;
+  border-radius: 20px;
+  font-size: 12px;
+  color: #555;
+  background: #fff;
+  transition: all 0.15s;
+}
+
+.sf-tag-box.checked { border-color: #22c55e; background: #f0fdf4; color: #166534; font-weight: 600; }
+
+.sf-status-row { display: flex; gap: 8px; }
+
+.sf-status-btn {
+  flex: 1;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1.5px solid #e8e8e8;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  color: #888;
+}
+
+.sf-status-btn.active-available { border-color: #22c55e; background: #f0fdf4; color: #166534; }
+.sf-status-btn.active-full      { border-color: #ef4444; background: #fef2f2; color: #991b1b; }
+
+.admin-modal-ft {
+  padding: 16px 24px;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.btn-cancel {
+  padding: 9px 20px;
+  background: #fff;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  color: #555;
+}
+
+.btn-cancel:hover { border-color: #aaa; }
+
+.modal-fade-enter-active { animation: modal-in 0.2s ease-out; }
+.modal-fade-leave-active { animation: modal-out 0.15s ease-in; }
+@keyframes modal-in  { from { opacity:0; transform: scale(0.96); } to { opacity:1; transform: scale(1); } }
+@keyframes modal-out { from { opacity:1; transform: scale(1); } to { opacity:0; transform: scale(0.96); } }
+
 /* ── Footer ── */
 .admin-footer {
   background: #555859; color: #556;
@@ -1596,6 +2035,43 @@ export default {
 
   /* Alert dropdown */
   .alert-dropdown { right: 0; width: 260px; }
+
+  /* ── Shelter Management ── */
+  .shelter-stats-row { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .shelter-stat-card { padding: 12px 10px; border-radius: 10px; }
+  .shelter-stat-num { font-size: 22px; }
+
+  /* View header: ปุ่มเพิ่มขนาดเต็มแถว */
+  .view-shelters .view-header { flex-direction: column; align-items: stretch; gap: 10px; }
+  .btn-primary-sm { width: 100%; justify-content: center; font-size: 14px; padding: 10px; }
+
+  /* ตาราง: ซ่อน "พิกัด" และ "บริการ" ออก เหลือ ชื่อ / ความจุ / สถานะ / จัดการ */
+  .view-shelters .admin-table th:nth-child(3),
+  .view-shelters .admin-table td:nth-child(3),
+  .view-shelters .admin-table th:nth-child(4),
+  .view-shelters .admin-table td:nth-child(4) { display: none; }
+
+  /* ชื่อสถานที่: ตัดข้อความที่ยาวเกิน */
+  .shelter-name-cell { font-size: 12px; }
+  .shelter-name-cell .shelter-icon-sm { font-size: 14px; }
+
+  /* ปุ่ม Edit/Delete: เล็กลง */
+  .action-btns { gap: 4px; }
+  .btn-xs { width: 26px; height: 26px; padding: 0; font-size: 11px; }
+
+  /* Modal: slide up จากด้านล่าง */
+  .admin-modal-overlay { align-items: flex-end; padding: 0; }
+  .admin-modal { border-radius: 20px 20px 0 0; max-width: 100%; max-height: 88vh; }
+  .admin-modal-hd { padding: 16px 18px; }
+  .admin-modal-body { padding: 14px 18px; }
+  .admin-modal-ft { padding: 12px 18px 28px; }
+
+  /* Form: 1 คอลัมน์ */
+  .sf-grid { grid-template-columns: 1fr; gap: 0; }
+  .sf-grid .sf-group { margin-bottom: 12px; }
+  .sf-icon-row { gap: 6px; }
+  .sf-icon-box { padding: 8px 10px; font-size: 10px; }
+  .sf-icon-box i { font-size: 17px; }
 }
 
 /* ══════════════════════════════════════

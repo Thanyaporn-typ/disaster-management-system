@@ -17,7 +17,7 @@
     </nav>
 
     <!-- ══════════ WORKFLOW STEPS BAR ══════════ -->
-    <div class="workflow-bar" v-if="currentStep !== 'tasks'">
+    <div class="workflow-bar" v-if="currentStep !== 'tasks' && currentStep !== 'shelters'">
       <div v-for="(step, i) in workflowSteps" :key="step.key"
         :class="['wf-step', currentStep === step.key ? 'active' : stepIndex > i ? 'done' : '']">
         <div class="wf-circle">
@@ -34,7 +34,12 @@
       <div class="tasks-header">
         <div class="tasks-header-top">
           <h1 class="tasks-title">ภารกิจของฉัน</h1>
-          <div class="tasks-date">{{ todayStr }}</div>
+          <div class="tasks-header-right">
+            <div class="tasks-date">{{ todayStr }}</div>
+            <button v-if="false" class="btn-shelter-nav" @click="currentStep = 'shelters'">
+              <i class="bi bi-house-fill"></i> จุดพักพิง
+            </button>
+          </div>
         </div>
         <div class="task-tabs">
           <button v-for="tab in taskTabs" :key="tab.key" :class="['task-tab', activeTaskTab === tab.key ? 'active' : '']"
@@ -110,6 +115,10 @@
             <span class="info-label">วันที่แจ้ง</span>
             <span class="info-val">{{ selectedTask.date }}</span>
           </div>
+          <div class="info-row" v-if="selectedTask.type">
+            <span class="info-label">ประเภทเหตุ</span>
+            <span class="info-val">{{ selectedTask.type }}</span>
+          </div>
           <div class="info-row">
             <span class="info-label">สถานที่</span>
             <span class="info-val">{{ selectedTask.location }}</span>
@@ -120,7 +129,7 @@
             <span v-if="selectedTask.needs && selectedTask.needs.length" class="tmodal-needs-chips" style="justify-content:flex-end">
               <span v-for="need in selectedTask.needs" :key="need.key" class="tmodal-need-chip">{{ need.label }}</span>
             </span>
-            <span v-else class="info-val">{{ selectedTask.type }}</span>
+            <span v-else class="info-val">—</span>
           </div>
           <div class="info-row">
             <span class="info-label">ระดับความเร่งด่วน</span>
@@ -355,6 +364,56 @@
       </div>
     </div>
 
+    <!-- ══════════ SHELTER MANAGEMENT ══════════ -->
+    <div v-if="false && currentStep === 'shelters'" class="page-shelters">
+      <div class="detail-header">
+        <button class="back-btn" @click="currentStep = 'tasks'"><i class="bi bi-arrow-left"></i> กลับ</button>
+        <h2 class="detail-title">จุดพักพิง</h2>
+        <div></div>
+      </div>
+
+      <div class="mobile-content">
+        <div class="shelter-stat-row">
+          <div class="shelter-stat">
+            <div class="shelter-stat-num">{{ localShelters.length }}</div>
+            <div class="shelter-stat-label">จุดทั้งหมด</div>
+          </div>
+          <div class="shelter-stat">
+            <div class="shelter-stat-num available">{{ localShelters.filter(s => s.available).length }}</div>
+            <div class="shelter-stat-label">ว่าง</div>
+          </div>
+          <div class="shelter-stat">
+            <div class="shelter-stat-num full">{{ localShelters.filter(s => !s.available).length }}</div>
+            <div class="shelter-stat-label">เต็ม</div>
+          </div>
+        </div>
+
+        <div class="shelter-manage-list">
+          <div v-for="s in localShelters" :key="s.id" class="shelter-manage-card">
+            <div class="shelter-manage-icon">
+              <i :class="['bi', s.icon]"></i>
+            </div>
+            <div class="shelter-manage-body">
+              <div class="shelter-manage-name">{{ s.name }}</div>
+              <div class="shelter-manage-meta">รองรับ {{ s.capacity }} คน</div>
+              <div class="shelter-manage-tags">
+                <span v-for="tag in s.tags" :key="tag" class="sm-tag">{{ tag }}</span>
+              </div>
+            </div>
+            <button
+              :class="['toggle-btn', s.available ? 'available' : 'full']"
+              @click="toggleShelterStatus(s)"
+            >{{ s.available ? 'ว่าง' : 'เต็ม' }}</button>
+          </div>
+
+          <div v-if="localShelters.length === 0" class="empty-tasks">
+            <div class="empty-icon"><i class="bi bi-house"></i></div>
+            <div class="empty-text">ยังไม่มีจุดพักพิง</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Task Preview Modal -->
     <transition name="tmodal-fade">
       <div class="tmodal-overlay" v-if="showTaskModal && previewTask" @click.self="showTaskModal = false">
@@ -378,10 +437,10 @@
                 <span class="task-info-icon"><i class="bi bi-geo-alt-fill"></i></span>
                 <span class="task-info-text">สถานที่: {{ previewTask.location }}</span>
               </div>
-              <!-- <div class="task-info-row">
+              <div class="task-info-row" v-if="previewTask.type">
                 <span class="task-info-icon"><i class="bi bi-exclamation-circle-fill"></i></span>
-                <span class="task-info-text">ประเภท: {{ previewTask.type }}</span>
-              </div> -->
+                <span class="task-info-text">ประเภทเหตุ: {{ previewTask.type }}</span>
+              </div>
               <div class="task-info-row">
                 <span class="task-info-icon"><i class="bi bi-people-fill"></i></span>
                 <span class="task-info-text">ผู้ประสบภัย: {{ previewTask.peopleCount || 0 }} คน</span>
@@ -468,8 +527,20 @@ export default {
       type: Array,
       default: () => [],
     },
+    sharedShelters: {
+      type: Array,
+      default: () => [],
+    },
   },
   watch: {
+    sharedShelters: {
+      immediate: true,
+      handler(list) {
+        if (list.length && !this.localShelters.length) {
+          this.localShelters = list.map(s => ({ ...s }))
+        }
+      },
+    },
     externalTasks: {
       immediate: true,
       handler(newList) {
@@ -534,6 +605,7 @@ export default {
       ],
 
       tasks: [],
+      localShelters: [],
 
       todayStr: now.toLocaleDateString('th-TH', {
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
@@ -624,6 +696,10 @@ export default {
       this.completionNote = ''
       this.needs.forEach(n => n.checked = false)
       this.otherNeedText = ''
+    },
+    toggleShelterStatus(s) {
+      s.available = !s.available
+      this.$emit('shelters-updated', this.localShelters.map(s => ({ ...s })))
     },
   },
 }
@@ -2166,6 +2242,272 @@ export default {
 .btn-success:hover {
   background: #15803d;
 }
+
+/* ── Tasks Header Right ── */
+.tasks-header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.btn-shelter-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  background: rgba(248,210,71,0.15);
+  border: 1px solid rgba(248,210,71,0.35);
+  border-radius: 8px;
+  color: #f8d247;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+
+.btn-shelter-nav:hover { background: rgba(248,210,71,0.25); }
+
+/* ── Shelter Management ── */
+.page-shelters { flex: 1; }
+
+.btn-add-shelter {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 14px;
+  background: #f8d247;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #555859;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.shelter-stat-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.shelter-stat {
+  flex: 1;
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  padding: 14px;
+  text-align: center;
+}
+
+.shelter-stat-num {
+  font-size: 26px;
+  font-weight: 800;
+  color: #555859;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.shelter-stat-num.available { color: #22c55e; }
+.shelter-stat-num.full      { color: #ef4444; }
+
+.shelter-stat-label {
+  font-size: 12px;
+  color: #888;
+}
+
+.shelter-manage-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.shelter-manage-card {
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.shelter-manage-icon {
+  width: 44px;
+  height: 44px;
+  background: #f3f4f6;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: #555859;
+  flex-shrink: 0;
+}
+
+.shelter-manage-body { flex: 1; min-width: 0; }
+
+.shelter-manage-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.shelter-manage-meta {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 6px;
+}
+
+.shelter-manage-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.sm-tag {
+  font-size: 10px;
+  font-weight: 600;
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+
+.shelter-manage-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+  align-items: flex-end;
+}
+
+.toggle-btn {
+  padding: 5px 12px;
+  border-radius: 8px;
+  border: none;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  min-width: 50px;
+}
+
+.toggle-btn.available { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+.toggle-btn.full      { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+
+.sm-edit-btn, .sm-del-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  border: 1px solid #e8e8e8;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  cursor: pointer;
+  color: #666;
+  transition: all 0.15s;
+}
+
+.sm-edit-btn:hover { border-color: #f8d247; color: #555859; }
+.sm-del-btn:hover  { border-color: #ef4444; color: #ef4444; }
+
+/* ── Shelter Form ── */
+.sf-form { display: flex; flex-direction: column; gap: 0; }
+
+.sf-group {
+  margin-bottom: 14px;
+}
+
+.sf-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: #555;
+  margin-bottom: 6px;
+}
+
+.sf-req { color: #ef4444; }
+
+.sf-input {
+  width: 100%;
+  border: 1.5px solid #e8e8e8;
+  border-radius: 9px;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #333;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.sf-input:focus { border-color: #f8d247; }
+
+.sf-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.sf-row .sf-group { margin-bottom: 0; }
+.flex-1 { flex: 1; }
+
+.sf-tags-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sf-tag-check { cursor: pointer; }
+
+.sf-tag-box {
+  display: inline-block;
+  padding: 6px 12px;
+  border: 1.5px solid #e8e8e8;
+  border-radius: 20px;
+  font-size: 12px;
+  color: #555;
+  transition: all 0.15s;
+  background: #fff;
+}
+
+.sf-tag-box.checked {
+  border-color: #22c55e;
+  background: #f0fdf4;
+  color: #166534;
+  font-weight: 600;
+}
+
+.sf-status-row {
+  display: flex;
+  gap: 8px;
+}
+
+.sf-status-btn {
+  flex: 1;
+  padding: 9px;
+  border-radius: 9px;
+  border: 1.5px solid #e8e8e8;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  color: #888;
+  transition: all 0.15s;
+}
+
+.sf-status-btn.active-available { border-color: #22c55e; background: #f0fdf4; color: #166534; }
+.sf-status-btn.active-full      { border-color: #ef4444; background: #fef2f2; color: #991b1b; }
 
 /* ── Footer ── */
 .officer-footer {

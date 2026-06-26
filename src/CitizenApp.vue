@@ -128,6 +128,82 @@
         </div>
       </section>
 
+      <!-- Emergency Info Section -->
+      <section class="emergency-section">
+        <div class="section-title-wrap">
+          <h2 class="section-title">ข้อมูล & เบอร์ฉุกเฉิน</h2>
+          <p class="emergency-subtitle">โทรด่วน · จุดพักพิง · ข้อควรปฏิบัติ</p>
+        </div>
+
+        <div class="emergency-phone-header">
+          <i class="bi bi-telephone-fill"></i> เบอร์โทรฉุกเฉิน
+        </div>
+
+        <div class="emergency-grid">
+          <div class="emergency-card">
+            <div class="emergency-icon-box emergency-icon--medical">🚑</div>
+            <div class="emergency-info">
+              <div class="emergency-name">การแพทย์ฉุกเฉิน</div>
+              <div class="emergency-number">1669</div>
+            </div>
+          </div>
+          <div class="emergency-card">
+            <div class="emergency-icon-box emergency-icon--police">🚓</div>
+            <div class="emergency-info">
+              <div class="emergency-name">แจ้งเหตุด่วน</div>
+              <div class="emergency-number">191</div>
+            </div>
+          </div>
+          <div class="emergency-card">
+            <div class="emergency-icon-box emergency-icon--fire">🚒</div>
+            <div class="emergency-info">
+              <div class="emergency-name">ดับเพลิง</div>
+              <div class="emergency-number">199</div>
+            </div>
+          </div>
+          <div class="emergency-card">
+            <div class="emergency-icon-box emergency-icon--disaster">🌪️</div>
+            <div class="emergency-info">
+              <div class="emergency-name">ปภ.สาธารณภัย</div>
+              <div class="emergency-number">1784</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- จุดพักพิง -->
+        <div v-if="false" class="shelter-header-row">
+          <span class="shelter-header-icon">🏠</span>
+          <span class="shelter-header-text">จุดพักพิง / ศูนย์อพยพใกล้คุณ</span>
+        </div>
+
+        <div v-if="false && !userLat" class="shelter-locate-wrap">
+          <button class="shelter-locate-btn" @click="requestLocation">
+            <i class="bi bi-geo-alt-fill"></i> ค้นหาจุดพักพิงใกล้คุณ
+          </button>
+        </div>
+
+        <div v-if="false" class="shelter-list">
+          <div v-for="shelter in nearbyShelters" :key="shelter.id" class="shelter-card">
+            <div class="shelter-icon-box">
+              <i :class="['bi', shelter.icon]"></i>
+            </div>
+            <div class="shelter-body">
+              <div class="shelter-name">{{ shelter.name }}</div>
+              <div class="shelter-meta">
+                ห่าง {{ shelter.distance }} กม. · รองรับ {{ shelter.capacity }} คน ·
+                <span :class="['shelter-status', shelter.available ? 'available' : 'full']">
+                  {{ shelter.available ? 'ว่าง' : 'เต็ม' }}
+                </span>
+              </div>
+              <div class="shelter-tags">
+                <span v-for="tag in shelter.tags" :key="tag" class="shelter-tag">{{ tag }}</span>
+              </div>
+            </div>
+            <div class="shelter-arrow">›</div>
+          </div>
+        </div>
+      </section>
+
       <!-- How it works -->
       <section class="how-section">
         <div class="how-inner">
@@ -219,8 +295,45 @@
           <div class="card">
             <div class="card-head"><i class="bi bi-clipboard2-fill"></i> รายละเอียดเหตุการณ์</div>
 
-            <!-- Urgency -->
+            <!-- Incident Type -->
+            <div class="field-group mt-3">
+              <label class="field-label">เลือกประเภทเหตุด่วน</label>
+              <div class="incident-type-grid">
+                <button
+                  v-for="t in incidentTypes"
+                  :key="t.key"
+                  :class="['incident-type-card', selectedIncidentType === t.key ? 'active' : '']"
+                  @click="selectedIncidentType = t.key"
+                >
+                  <span class="incident-type-emoji">{{ t.emoji }}</span>
+                  <span class="incident-type-label">{{ t.label }}</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Urgency Assessment -->
             <div class="field-group">
+              <div class="assess-box">
+                <div class="assess-title"><i class="bi bi-lightning-charge-fill"></i> ตอบ 2 ข้อ เพื่อประเมินความเร่งด่วน</div>
+                <div class="assess-question">
+                  <span class="assess-q-label">มีผู้บาดเจ็บ/หมดสติ หรือไม่?</span>
+                  <div class="assess-btn-row">
+                    <button :class="['assess-btn', 'assess-btn--yes', hasInjured === true ? 'active' : '']" @click="setAssess('hasInjured', true)">มี</button>
+                    <button :class="['assess-btn', 'assess-btn--no', hasInjured === false ? 'active' : '']" @click="setAssess('hasInjured', false)">ไม่มี</button>
+                  </div>
+                </div>
+                <div class="assess-question">
+                  <span class="assess-q-label">มีเด็ก / ผู้สูงอายุ / ผู้ป่วยติดเตียง?</span>
+                  <div class="assess-btn-row">
+                    <button :class="['assess-btn', 'assess-btn--yes', hasVulnerable === true ? 'active' : '']" @click="setAssess('hasVulnerable', true)">ใช่</button>
+                    <button :class="['assess-btn', 'assess-btn--no', hasVulnerable === false ? 'active' : '']" @click="setAssess('hasVulnerable', false)">ไม่มี</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Urgency -->
+            <!-- <div class="field-group">
               <label class="field-label">ระดับความเร่งด่วน</label>
               <div class="urgency-row">
                 <button
@@ -230,7 +343,7 @@
                   @click="urgency = i"
                 ><i :class="['bi', u.icon]" :style="{ color: u.iconColor }"></i> {{ u.label }}</button>
               </div>
-            </div>
+            </div> -->
 
             <!-- Needs -->
             <div class="field-group">
@@ -466,6 +579,10 @@
                 </span>
               </div>
             </div>
+            <div class="modal-info-item modal-info-item--full" v-if="selectedCase.type">
+              <div class="modal-info-label"><i class="bi bi-tag-fill"></i> ประเภทเหตุ</div>
+              <div class="modal-info-val">{{ selectedCase.type }}</div>
+            </div>
           </div>
 
           <div v-if="selectedCase.needs && selectedCase.needs.length" class="modal-needs-sect">
@@ -564,6 +681,10 @@ export default {
       type: Array,
       default: () => [],
     },
+    sharedShelters: {
+      type: Array,
+      default: () => [],
+    },
   },
   data() {
     return {
@@ -572,6 +693,15 @@ export default {
       showDetailModal: false,
       selectedCase: null,
       urgency: 1,
+      hasInjured: null,
+      hasVulnerable: null,
+      selectedIncidentType: null,
+      incidentTypes: [
+        { key: 'fire', label: 'ไฟไหม้', emoji: '🔥' },
+        { key: 'flood', label: 'น้ำท่วม', emoji: '🌊' },
+        { key: 'medical', label: 'เจ็บป่วย', emoji: '🚑' },
+        { key: 'stuck', label: 'ติดค้าง', emoji: '⚠️' },
+      ],
       peopleCount: 0,
       previewImages: [],
       form: { name: '', phone: '', location: '', description: '' },
@@ -612,6 +742,8 @@ export default {
         { key: 'form', label: 'แจ้งเหตุ', icon: 'bi-pencil-fill', desc: 'กรอกข้อมูลเหตุการณ์' },
         { key: 'tracking', label: 'ติดตามเคส', icon: 'bi-search', desc: 'ดูสถานะการช่วยเหลือ' },
       ],
+      userLat: null,
+      userLng: null,
     }
   },
   computed: {
@@ -622,8 +754,23 @@ export default {
       if (this.activeTab === 'all') return this.cases
       return this.cases.filter(c => this.caseStatus(c.status) === this.activeTab)
     },
+    nearbyShelters() {
+      if (!this.userLat) return []
+      return this.sharedShelters
+        .map(s => ({ ...s, distance: this.calcDistance(this.userLat, this.userLng, s.lat, s.lng) }))
+        .sort((a, b) => a.distance - b.distance)
+        .slice(0, 5)
+    },
   },
   methods: {
+    setAssess(field, val) {
+      this[field] = val
+      const injured = field === 'hasInjured' ? val : this.hasInjured
+      const vulnerable = field === 'hasVulnerable' ? val : this.hasVulnerable
+      if (injured === true && vulnerable === true) this.urgency = 2
+      else if (injured === true || vulnerable === true) this.urgency = 1
+      else if (injured === false && vulnerable === false) this.urgency = 0
+    },
     goToForm() {
       this.currentView = 'form'
       this.$nextTick(() => window.scrollTo({ top: 0, behavior: 'smooth' }))
@@ -641,20 +788,16 @@ export default {
     submitForm() {
       this.caseNumber = String(Math.floor(1000 + Math.random() * 9000))
       const urgencyMap = ['low', 'mid', 'high']
-      const typeMap = {
-        food: 'ขาดแคลนอาหาร', medical: 'ต้องการแพทย์',
-        rescue: 'ต้องการกู้ภัย', shelter: 'ต้องการที่พัก',
-        clothes: 'ขาดเครื่องนุ่งห่ม', other: 'เหตุฉุกเฉิน',
-      }
       const checkedNeeds = this.needs.filter(n => n.checked)
-      const checkedNeed = checkedNeeds[0]
+      const selectedType = this.incidentTypes.find(t => t.key === this.selectedIncidentType)
       const now = new Date()
       const dateStr = `${now.getDate()}/${now.getMonth()+1}/${String(now.getFullYear()).slice(-2)} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`
       const report = {
         id: 'NO.' + this.caseNumber,
         date: dateStr,
         location: this.form.location || 'ไม่ระบุสถานที่',
-        type: checkedNeed ? (typeMap[checkedNeed.key] || 'เหตุฉุกเฉิน') : 'เหตุฉุกเฉิน',
+        type: selectedType ? `${selectedType.emoji} ${selectedType.label}` : 'เหตุฉุกเฉิน',
+        incidentType: this.selectedIncidentType,
         urgency: urgencyMap[this.urgency] || 'mid',
         status: 'new',
         contactName: this.form.name || 'ไม่ระบุ',
@@ -665,6 +808,9 @@ export default {
         images: [...this.previewImages],
       }
       this.$emit('report-submitted', report)
+      this.selectedIncidentType = null
+      this.hasInjured = null
+      this.hasVulnerable = null
       this.currentView = 'confirm'
     },
     openDetail(c) {
@@ -682,6 +828,19 @@ export default {
     },
     outcomeLabel(o) {
       return { resolved: 'แก้ไขสำเร็จ', transferred: 'ส่งต่อโรงพยาบาล', evacuated: 'อพยพแล้ว', pending: 'รอหน่วยสนับสนุน' }[o] || 'เสร็จสิ้น'
+    },
+    requestLocation() {
+      navigator.geolocation.getCurrentPosition(
+        pos => { this.userLat = pos.coords.latitude; this.userLng = pos.coords.longitude },
+        () => { this.userLat = 13.7563; this.userLng = 100.5018 }
+      )
+    },
+    calcDistance(lat1, lng1, lat2, lng2) {
+      const R = 6371
+      const dLat = (lat2 - lat1) * Math.PI / 180
+      const dLng = (lng2 - lng1) * Math.PI / 180
+      const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2
+      return (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))).toFixed(1)
     },
   },
 }
@@ -975,6 +1134,193 @@ export default {
 .banner-desc {
   font-size: 13px;
   color: rgba(255,255,255,0.75);
+}
+
+/* ── Emergency Info Section ── */
+.emergency-section {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 32px 56px;
+  width: 100%;
+}
+
+.emergency-subtitle {
+  font-size: 14px;
+  color: #888;
+  margin-top: 4px;
+}
+
+.emergency-phone-header {
+  font-size: 15px;
+  font-weight: 700;
+  color: #555859;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.emergency-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.emergency-card {
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.emergency-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.emergency-icon-box {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  flex-shrink: 0;
+}
+
+.emergency-icon--medical  { background: #f0fdf4; }
+.emergency-icon--police   { background: #f3f4f6; }
+.emergency-icon--fire     { background: #fff1f2; }
+.emergency-icon--disaster { background: #f0fdf4; }
+
+.emergency-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #555859;
+  margin-bottom: 4px;
+}
+
+.emergency-number {
+  font-size: 22px;
+  font-weight: 800;
+  color: #22c55e;
+}
+
+/* ── Shelter Section ── */
+.shelter-header-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #555859;
+  margin-bottom: 16px;
+  margin-top: 8px;
+}
+
+.shelter-header-icon { font-size: 18px; }
+
+.shelter-locate-wrap {
+  margin-bottom: 8px;
+}
+
+.shelter-locate-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: #555859;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.2s;
+}
+
+.shelter-locate-btn:hover { opacity: 0.85; }
+
+.shelter-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.shelter-card {
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.shelter-card:hover {
+  background: #fafafa;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+.shelter-icon-box {
+  width: 48px;
+  height: 48px;
+  background: #f3f4f6;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: #555859;
+  flex-shrink: 0;
+}
+
+.shelter-body { flex: 1; }
+
+.shelter-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.shelter-meta {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 6px;
+}
+
+.shelter-status.available { color: #22c55e; font-weight: 700; }
+.shelter-status.full      { color: #ef4444; font-weight: 700; }
+
+.shelter-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.shelter-tag {
+  font-size: 11px;
+  font-weight: 600;
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.shelter-arrow {
+  font-size: 22px;
+  color: #ccc;
+  flex-shrink: 0;
 }
 
 /* ── How It Works ── */
@@ -1398,6 +1744,118 @@ export default {
 }
 
 .optional { font-weight: 400; color: #aaa; }
+
+.assess-box {
+  background: #fff8f0;
+  border: 1.5px solid #f8d247;
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.assess-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #555859;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.assess-title .bi { color: #f59e0b; }
+
+.assess-question {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.assess-q-label {
+  font-size: 13px;
+  color: #444;
+  flex: 1;
+  line-height: 1.4;
+}
+
+.assess-btn-row {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.assess-btn {
+  padding: 8px 20px;
+  border-radius: 10px;
+  border: 1.5px solid #e8e8e8;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  color: #555;
+  transition: all 0.15s;
+  min-width: 64px;
+}
+
+.assess-btn--yes.active {
+  background: #fef2f2;
+  border-color: #ef4444;
+  color: #991b1b;
+}
+
+.assess-btn--no.active {
+  background: #f0fdf4;
+  border-color: #22c55e;
+  color: #166534;
+}
+
+.assess-btn:not(.active):hover {
+  border-color: #ccc;
+  background: #fafafa;
+}
+
+.incident-type-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.incident-type-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 8px;
+  border: 2px solid #e8e8e8;
+  border-radius: 14px;
+  background: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+
+.incident-type-card:hover {
+  border-color: #f8d247;
+  background: #fdf6d8;
+}
+
+.incident-type-card.active {
+  border-color: #f8d247;
+  background: #fdf6d8;
+  box-shadow: 0 0 0 3px rgba(248,210,71,0.2);
+}
+
+.incident-type-emoji { font-size: 32px; line-height: 1; }
+
+.incident-type-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #555859;
+}
 
 .urgency-row {
   display: flex;
@@ -2212,6 +2670,18 @@ export default {
   .banner-title { font-size: 15px; }
   .banner-desc { font-size: 12px; }
 
+  /* Emergency + Shelter */
+  .emergency-section { padding: 0 16px 28px; }
+  .emergency-grid { gap: 10px; }
+  .emergency-card { padding: 14px; gap: 12px; }
+  .emergency-icon-box { width: 52px; height: 52px; font-size: 28px; border-radius: 12px; }
+  .emergency-name { font-size: 13px; }
+  .emergency-number { font-size: 18px; }
+  .shelter-card { padding: 12px; gap: 10px; }
+  .shelter-icon-box { width: 40px; height: 40px; font-size: 18px; border-radius: 10px; }
+  .shelter-name { font-size: 14px; }
+  .shelter-meta { font-size: 11px; }
+
   /* Steps / How */
   .how-inner { padding: 36px 16px 28px; }
   .how-title { font-size: 22px; }
@@ -2409,6 +2879,8 @@ export default {
   border-radius: 12px;
   padding: 14px 16px;
 }
+
+.modal-info-item--full { grid-column: 1 / -1; }
 
 .modal-info-label {
   font-size: 11px;
