@@ -119,7 +119,9 @@
                       <td class="td-id">{{ inc.id }}</td>
                       <td>{{ inc.type }}</td>
                       <td class="td-loc">{{ inc.location }}</td>
-                      <td><span :class="['urgency-badge', inc.urgency]">{{ urgencyText(inc.urgency) }}</span></td>
+                      <td>
+                        <span :class="['urgency-badge', incUrgencyDisplay(inc).cls]">{{ incUrgencyDisplay(inc).label }}</span>
+                      </td>
                       <td class="td-date">{{ inc.date }}</td>
                       <td><span :class="['status-pill', inc.status]">{{ statusText(inc.status) }}</span></td>
                     </tr>
@@ -254,7 +256,9 @@
                     <td class="td-loc">{{ inc.location }}</td>
                     <td>{{ inc.contactName || '—' }}</td>
                     <td>{{ inc.contactPhone || '—' }}</td>
-                    <td><span :class="['urgency-badge', inc.urgency]">{{ urgencyText(inc.urgency) }}</span></td>
+                    <td>
+                      <span :class="['urgency-badge', incUrgencyDisplay(inc).cls]">{{ incUrgencyDisplay(inc).label }}</span>
+                    </td>
                     <td class="td-date">{{ inc.date }}</td>
                     <td><span :class="['status-pill', inc.status]">{{ statusText(inc.status) }}</span></td>
                     <td><button class="btn-eye" @click.stop="openIncident(inc)"><i class="bi bi-eye-fill"></i></button></td>
@@ -653,7 +657,7 @@
           <div class="modal-hd">
             <div class="modal-hd-left">
               <div class="modal-case-id">{{ selectedIncident.id }}</div>
-              <span :class="['urgency-badge', selectedIncident.urgency]">{{ urgencyText(selectedIncident.urgency) }}</span>
+              <span :class="['urgency-badge', incUrgencyDisplay(selectedIncident).cls]">{{ incUrgencyDisplay(selectedIncident).label }}</span>
             </div>
             <button class="modal-close-btn" @click="closeModal"><i class="bi bi-x-lg"></i></button>
           </div>
@@ -811,6 +815,7 @@ export default {
   props: {
     externalIncidents: { type: Array, default: () => [] },
     sharedShelters: { type: Array, default: () => [] },
+    initialRiskZones: { type: Array, default: () => [] },
   },
   watch: {
     externalIncidents(val) {
@@ -821,6 +826,14 @@ export default {
       handler(list) {
         if (list.length && !this.localShelters.length) {
           this.localShelters = list.map(s => ({ ...s }))
+        }
+      },
+    },
+    initialRiskZones: {
+      immediate: true,
+      handler(zones) {
+        if (zones && zones.length) {
+          this.riskZones = zones.map(z => ({ ...z }))
         }
       },
     },
@@ -890,11 +903,7 @@ export default {
         { id: 'NO.0998', type: 'อาคารถล่ม', location: 'ซอยสุขาภิบาล 3',          urgency: 'high', status: 'done',     date: '20/11/25',  contactName: 'นางสุข',   contactPhone: '089-888-999', images: ['https://picsum.photos/seed/build1/600/400', 'https://picsum.photos/seed/build2/600/400', 'https://picsum.photos/seed/build3/600/400'] },
       ],
 
-      riskZones: [
-        { id: 1, name: 'สะพานสูง',              level: 'high',   x: 65, y: 60, size: 120 },
-        { id: 2, name: 'ลาดกระบัง-รามคำแหง',    level: 'medium', x: 38, y: 30, size: 180 },
-        { id: 3, name: 'นวมินทร์',               level: 'low',    x: 78, y: 72, size: 90  },
-      ],
+      riskZones: [],
 
       rbacUsers: [
         { id: 1, name: 'นายสมชาย', role: 'เจ้าหน้าที่ภาคสนาม', zone: 'ลาดกระบัง',   active: true  },
@@ -1002,6 +1011,15 @@ export default {
       return { resolved: 'bi-check-circle-fill', transferred: 'bi-truck-front-fill', evacuated: 'bi-bus-front-fill', pending: 'bi-hourglass-split' }[key] || 'bi-circle'
     },
     urgencyText(u) { return { low: 'ปกติ', mid: 'ด่วน', high: 'ด่วนมาก' }[u] || u },
+    incUrgencyDisplay(inc) {
+      if (inc.priority) {
+        return { p1: { cls: 'p1', label: 'P1 · ด่วนมาก' }, p2: { cls: 'p2', label: 'P2 · ด่วน' }, p3: { cls: 'p3', label: 'P3 · ปานกลาง' }, p4: { cls: 'p4', label: 'P4 · ปกติ' } }[inc.priority] || { cls: 'p4', label: 'P4 · ปกติ' }
+      }
+      return { high: { cls: 'p2', label: 'P2 · ด่วน' }, mid: { cls: 'p3', label: 'P3 · ปานกลาง' }, low: { cls: 'p4', label: 'P4 · ปกติ' } }[inc.urgency] || { cls: 'p4', label: 'P4 · ปกติ' }
+    },
+    priorityBadgeText(p) {
+      return { p1: 'P1-Critical', p2: 'P2-High', p3: 'P3-Medium', p4: 'P4-Low' }[p] || ''
+    },
     statusText(s) {
       return { new: 'รับเรื่อง', assigned: 'ดำเนินการ', done: 'เสร็จสิ้น', received: 'รับเรื่อง', processing: 'ดำเนินการ' }[s] || s
     },
@@ -1056,9 +1074,11 @@ export default {
       })
       this.newZone = { name: '', level: 'medium' }
       this.showAddZone = false
+      this.$emit('zones-updated', this.riskZones.map(z => ({ ...z })))
     },
     removeZone(id) {
       this.riskZones = this.riskZones.filter(z => z.id !== id)
+      this.$emit('zones-updated', this.riskZones.map(z => ({ ...z })))
     },
 
     openIncident(inc) {
@@ -1275,9 +1295,19 @@ export default {
   padding: 3px 10px; border-radius: 999px;
   font-size: 12px; font-weight: 700; white-space: nowrap;
 }
-.urgency-badge.high { background: #fee2e2; color: #dc2626; }
-.urgency-badge.mid  { background: #fef3c7; color: #d97706; }
-.urgency-badge.low  { background: #dcfce7; color: #16a34a; }
+.urgency-badge.p1 { background: #fee2e2; color: #dc2626; }
+.urgency-badge.p2 { background: #ffedd5; color: #c2410c; }
+.urgency-badge.p3 { background: #fef9c3; color: #a16207; }
+.urgency-badge.p4 { background: #dcfce7; color: #15803d; }
+
+.priority-badge {
+  padding: 3px 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 700; white-space: nowrap;
+}
+.priority-badge.p1 { background: #fee2e2; color: #dc2626; }
+.priority-badge.p2 { background: #ffedd5; color: #c2410c; }
+.priority-badge.p3 { background: #fef9c3; color: #a16207; }
+.priority-badge.p4 { background: #dcfce7; color: #15803d; }
 
 .status-pill {
   padding: 3px 10px; border-radius: 999px;
@@ -2192,7 +2222,6 @@ export default {
 .mf-phone:hover { text-decoration: underline; }
 
 /* Images */
-.modal-images-sect { }
 .modal-img-grid {
   display: grid; grid-template-columns: repeat(4, 1fr);
   gap: 8px; margin-top: 10px;
@@ -2217,8 +2246,6 @@ export default {
 .modal-img-thumb:hover .modal-img-overlay { opacity: 1; }
 
 /* Timeline */
-.modal-tl-sect { }
-
 .modal-result-sect {
   border: 1.5px solid #e0e7ff;
   border-radius: 12px;

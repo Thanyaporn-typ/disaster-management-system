@@ -62,11 +62,11 @@
       </transition>
 
       <div class="task-list">
-        <div v-for="task in tasksByTab(activeTaskTab)" :key="task.id" class="task-card" :class="task.urgency"
+        <div v-for="task in tasksByTab(activeTaskTab)" :key="task.id" class="task-card" :class="taskUrgencyDisplay(task).cls"
           @click="openTaskModal(task)">
           <div class="task-card-top">
             <div class="task-id">{{ task.id }}</div>
-            <span class="urgency-tag" :class="task.urgency">{{ urgencyLabel(task.urgency) }}</span>
+            <span :class="['urgency-tag', taskUrgencyDisplay(task).cls]">{{ taskUrgencyDisplay(task).label }}</span>
           </div>
           <div class="task-info-row">
             <span class="task-info-icon"><i class="bi bi-calendar3"></i></span>
@@ -133,7 +133,7 @@
           </div>
           <div class="info-row">
             <span class="info-label">ระดับความเร่งด่วน</span>
-            <span class="urgency-tag" :class="selectedTask.urgency">{{ urgencyLabel(selectedTask.urgency) }}</span>
+            <span :class="['urgency-tag', taskUrgencyDisplay(selectedTask).cls]">{{ taskUrgencyDisplay(selectedTask).label }}</span>
           </div>
         </div>
 
@@ -152,7 +152,7 @@
           <div class="info-card-head">
             <i class="bi bi-camera-fill"></i> รูปภาพแจ้งเหตุ
             <span class="img-count-badge" v-if="selectedTask.images && selectedTask.images.length">
-              {{ selectedTask.images.length }}/4
+              {{ selectedTask.images.length }}/2
             </span>
           </div>
           <div v-if="selectedTask.images && selectedTask.images.length" class="incident-img-grid">
@@ -422,7 +422,7 @@
           <div class="tmodal-hd">
             <div class="tmodal-hd-left">
               <span class="task-id">{{ previewTask.id }}</span>
-              <span class="urgency-tag" :class="previewTask.urgency">{{ urgencyLabel(previewTask.urgency) }}</span>
+              <span :class="['urgency-tag', taskUrgencyDisplay(previewTask).cls]">{{ taskUrgencyDisplay(previewTask).label }}</span>
             </div>
             <button class="tmodal-close" @click="showTaskModal = false"><i class="bi bi-x-lg"></i></button>
           </div>
@@ -474,7 +474,7 @@
             <div v-if="previewTask.images && previewTask.images.length" class="tmodal-img-sect">
               <div class="tmodal-img-head">
                 <i class="bi bi-camera-fill"></i> รูปภาพแจ้งเหตุ
-                <span class="img-count-badge">{{ previewTask.images.length }}/4</span>
+                <span class="img-count-badge">{{ previewTask.images.length }}/2</span>
               </div>
               <div class="tmodal-img-grid">
                 <div v-for="(img, idx) in previewTask.images" :key="idx" class="tmodal-thumb"
@@ -640,6 +640,12 @@ export default {
     },
     urgencyLabel(u) {
       return { low: 'ปกติ', mid: 'ด่วน', high: 'ด่วนมาก' }[u] || u
+    },
+    taskUrgencyDisplay(task) {
+      if (task.priority) {
+        return { p1: { cls: 'p1', label: 'P1 · ด่วนมาก' }, p2: { cls: 'p2', label: 'P2 · ด่วน' }, p3: { cls: 'p3', label: 'P3 · ปานกลาง' }, p4: { cls: 'p4', label: 'P4 · ปกติ' } }[task.priority] || { cls: 'p4', label: 'P4 · ปกติ' }
+      }
+      return { high: { cls: 'p2', label: 'P2 · ด่วน' }, mid: { cls: 'p3', label: 'P3 · ปานกลาง' }, low: { cls: 'p4', label: 'P4 · ปกติ' } }[task.urgency] || { cls: 'p4', label: 'P4 · ปกติ' }
     },
     acceptTask(task) {
       task.status = 'assigned'
@@ -1057,17 +1063,10 @@ export default {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
-.task-card.high {
-  border-left-color: #ef4444;
-}
-
-.task-card.mid {
-  border-left-color: #f59e0b;
-}
-
-.task-card.low {
-  border-left-color: #22c55e;
-}
+.task-card.p1 { border-left-color: #ef4444; }
+.task-card.p2 { border-left-color: #f97316; }
+.task-card.p3 { border-left-color: #eab308; }
+.task-card.p4 { border-left-color: #22c55e; }
 
 .task-card-top {
   display: flex;
@@ -1089,20 +1088,10 @@ export default {
   font-weight: 700;
 }
 
-.urgency-tag.high {
-  background: #fee2e2;
-  color: #dc2626;
-}
-
-.urgency-tag.mid {
-  background: #fef3c7;
-  color: #d97706;
-}
-
-.urgency-tag.low {
-  background: #dcfce7;
-  color: #16a34a;
-}
+.urgency-tag.p1 { background: #fee2e2; color: #dc2626; }
+.urgency-tag.p2 { background: #ffedd5; color: #c2410c; }
+.urgency-tag.p3 { background: #fef9c3; color: #a16207; }
+.urgency-tag.p4 { background: #dcfce7; color: #15803d; }
 
 .task-info-row {
   display: flex;

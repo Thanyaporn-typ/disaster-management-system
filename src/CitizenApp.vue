@@ -75,8 +75,9 @@
           <div class="hero-badge">ระบบรายงานเหตุฉุกเฉิน</div>
           <h1 class="hero-title">แจ้งเหตุภัยพิบัติ<br />ได้ทุกที่ ทุกเวลา</h1>
           <p class="hero-sub">ระบบรับแจ้งเหตุและติดตามสถานะการช่วยเหลือสำหรับประชาชน<br />เชื่อมต่อกับเจ้าหน้าที่ผู้รับผิดชอบโดยตรง</p>
-          <button class="btn-hero" @click="goToForm()">
-            กดแจ้งเหตุ
+          <button class="btn-hero btn-hero-circle btn-hero-red" @click="goToForm()">
+            <i class="bi bi-exclamation-octagon-fill btn-hero-circle-icon"></i>
+            <span>กดแจ้งเหตุ</span>
           </button>
         </div>
       </section>
@@ -266,7 +267,7 @@
 
           <!-- Image Upload -->
           <div class="card mt-card">
-            <div class="card-head"><i class="bi bi-camera-fill"></i> รูปภาพเหตุการณ์ <span class="upload-count">{{ previewImages.length }}/4</span></div>
+            <div class="card-head"><i class="bi bi-camera-fill"></i> รูปภาพเหตุการณ์ <span class="upload-count">{{ previewImages.length }}/2</span></div>
             <div class="upload-grid">
               <div
                 v-for="(img, idx) in previewImages"
@@ -277,7 +278,7 @@
                 <button class="upload-thumb-del" @click.stop="removeImage(idx)"><i class="bi bi-x"></i></button>
               </div>
               <div
-                v-if="previewImages.length < 4"
+                v-if="previewImages.length < 2"
                 class="upload-add-btn"
                 @click="triggerUpload"
               >
@@ -285,7 +286,7 @@
                 <div class="upload-add-hint">เพิ่มรูป</div>
               </div>
             </div>
-            <div class="upload-hint-sub upload-hint-bottom">PNG, JPG สูงสุด 10MB ต่อรูป</div>
+            <div class="upload-hint-sub upload-hint-bottom">PNG, JPG · สูงสุด 2 รูปต่อเคส · ขนาดสูงสุด 20 MB ต่อรูป</div>
             <input ref="fileInput" type="file" accept="image/*" hidden @change="handleImage" />
           </div>
         </div>
@@ -332,18 +333,30 @@
               </div>
             </div>
 
-            <!-- Urgency -->
-            <!-- <div class="field-group">
-              <label class="field-label">ระดับความเร่งด่วน</label>
-              <div class="urgency-row">
-                <button
-                  v-for="(u, i) in urgencyLevels"
-                  :key="i"
-                  :class="['urgency-chip', urgency == i ? 'active-' + u.key : '']"
-                  @click="urgency = i"
-                ><i :class="['bi', u.icon]" :style="{ color: u.iconColor }"></i> {{ u.label }}</button>
+            <!-- Priority Indicator -->
+            <!-- <div class="field-group" v-if="computedPriority">
+              <label class="field-label">ระดับ Priority (ประเมินอัตโนมัติ)</label>
+              <div :class="['priority-indicator', computedPriority]">
+                <div class="priority-indicator-left">
+                  <span class="priority-badge-pill">{{ priorityLabel(computedPriority) }}</span>
+                </div>
+                <div class="priority-indicator-right">
+                  <span class="priority-indicator-desc">{{ priorityDesc(computedPriority) }}</span>
+                </div>
               </div>
             </div> -->
+
+            <!-- Urgency -->
+            <div class="field-group">
+              <label class="field-label">ระดับความเร่งด่วน <span class="urgency-auto-hint">(กำหนดอัตโนมัติ)</span></label>
+              <div class="urgency-text-row">
+                <div
+                  v-for="item in urgencyDisplayLevels"
+                  :key="item.p"
+                  :class="['urgency-text-display', item.p, computedPriority === item.p ? 'active' : 'dim']"
+                >{{ item.label }}</div>
+              </div>
+            </div>
 
             <!-- Needs -->
             <div class="field-group">
@@ -506,7 +519,7 @@
                 <td data-label="วันที่แจ้ง">{{ c.date }}</td>
                 <td data-label="สถานที่">{{ c.location }}</td>
                 <td data-label="ความเร่งด่วน">
-                  <span :class="['urgency-badge', c.urgency]">{{ urgencyText(c.urgency) }}</span>
+                  <span :class="['urgency-text-display', caseUrgencyDisplay(c).cls, 'active']">{{ caseUrgencyDisplay(c).label }}</span>
                 </td>
                 <td data-label="สถานะ">
                   <span :class="['status-pill', caseStatus(c.status)]">
@@ -549,7 +562,10 @@
       <div class="modal-box">
         <div class="modal-header">
           <div>
-            <div class="modal-case-id">{{ selectedCase.id }}</div>
+            <div class="modal-header-top">
+              <div class="modal-case-id">{{ selectedCase.id }}</div>
+              <span v-if="selectedCase.priority" :class="['urgency-text-display', caseUrgencyDisplay(selectedCase).cls, 'active', 'modal-header-urgency']">{{ caseUrgencyDisplay(selectedCase).label }}</span>
+            </div>
             <h2 class="modal-title">รายละเอียดเคส</h2>
           </div>
           <button class="modal-close" @click="showDetailModal = false"><i class="bi bi-x-lg"></i></button>
@@ -562,16 +578,6 @@
               <div class="modal-info-val">{{ selectedCase.date }}</div>
             </div>
             <div class="modal-info-item">
-              <div class="modal-info-label"><i class="bi bi-geo-alt-fill"></i> สถานที่เกิดเหตุ</div>
-              <div class="modal-info-val">{{ selectedCase.location }}</div>
-            </div>
-            <div class="modal-info-item">
-              <div class="modal-info-label"><i class="bi bi-exclamation-circle-fill"></i> ความเร่งด่วน</div>
-              <div class="modal-info-val">
-                <span :class="['urgency-badge', selectedCase.urgency]">{{ urgencyText(selectedCase.urgency) }}</span>
-              </div>
-            </div>
-            <div class="modal-info-item">
               <div class="modal-info-label"><i class="bi bi-flag-fill"></i> สถานะ</div>
               <div class="modal-info-val">
                 <span :class="['status-pill', caseStatus(selectedCase.status)]">
@@ -579,22 +585,52 @@
                 </span>
               </div>
             </div>
+            <div class="modal-info-item modal-info-item--full">
+              <div class="modal-info-label"><i class="bi bi-geo-alt-fill"></i> สถานที่เกิดเหตุ</div>
+              <div class="modal-info-val">{{ selectedCase.location }}</div>
+            </div>
             <div class="modal-info-item modal-info-item--full" v-if="selectedCase.type">
               <div class="modal-info-label"><i class="bi bi-tag-fill"></i> ประเภทเหตุ</div>
               <div class="modal-info-val">{{ selectedCase.type }}</div>
             </div>
+            <div class="modal-info-item">
+              <div class="modal-info-label"><i class="bi bi-person-fill"></i> ผู้แจ้งเหตุ</div>
+              <div class="modal-info-val">{{ selectedCase.contactName || 'ไม่ระบุ' }}</div>
+            </div>
+            <div class="modal-info-item">
+              <div class="modal-info-label"><i class="bi bi-telephone-fill"></i> เบอร์ติดต่อ</div>
+              <div class="modal-info-val">{{ selectedCase.contactPhone || 'ไม่ระบุ' }}</div>
+            </div>
+            <div class="modal-info-item">
+              <div class="modal-info-label"><i class="bi bi-people-fill"></i> จำนวนผู้ประสบภัย</div>
+              <div class="modal-info-val">{{ selectedCase.peopleCount != null ? selectedCase.peopleCount + ' คน' : 'ไม่ระบุ' }}</div>
+            </div>
+            <div class="modal-info-item">
+              <div class="modal-info-label"><i class="bi bi-exclamation-circle-fill"></i> ความเร่งด่วน</div>
+              <div class="modal-info-val">
+                <span :class="['urgency-text-display', caseUrgencyDisplay(selectedCase).cls, 'active']">{{ caseUrgencyDisplay(selectedCase).label }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="selectedCase.description" class="modal-desc-sect">
+            <div class="modal-section-title"><i class="bi bi-card-text"></i> รายละเอียดเพิ่มเติม</div>
+            <div class="modal-desc-body">{{ selectedCase.description }}</div>
+          </div>
+
+          <div v-if="selectedCase.images && selectedCase.images.length" class="modal-images-sect">
+            <div class="modal-section-title"><i class="bi bi-images"></i> รูปภาพประกอบ</div>
+            <div class="modal-images-row">
+              <img v-for="(img, idx) in selectedCase.images" :key="idx" :src="img" class="modal-thumb" alt="รูปประกอบ" />
+            </div>
           </div>
 
           <div v-if="selectedCase.needs && selectedCase.needs.length" class="modal-needs-sect">
-            <div class="modal-section-title">ความต้องการให้ช่วยเหลือ</div>
+            <div class="modal-section-title"><i class="bi bi-heart-fill"></i> ความต้องการให้ช่วยเหลือ</div>
             <div class="modal-needs-chips">
               <span v-for="need in selectedCase.needs" :key="need.key" class="modal-need-chip">
                 {{ need.label }}
               </span>
-            </div>
-            <div class="modal-section-title mt-3">อื่นๆ</div>
-            <div v-if="selectedCase.otherNeedText" class="modal-other-need-text">
-              {{ selectedCase.otherNeedText }}
             </div>
           </div>
 
@@ -685,6 +721,10 @@ export default {
       type: Array,
       default: () => [],
     },
+    riskZones: {
+      type: Array,
+      default: () => [],
+    },
   },
   data() {
     return {
@@ -761,8 +801,61 @@ export default {
         .sort((a, b) => a.distance - b.distance)
         .slice(0, 5)
     },
+    isLocationInRiskZone() {
+      if (!this.form.location || !this.riskZones.length) return false
+      const loc = this.form.location.toLowerCase()
+      return this.riskZones.some(z => {
+        const zn = z.name.toLowerCase()
+        return loc.includes(zn) || zn.split(/[-–]/).some(part => loc.includes(part.trim()))
+      })
+    },
+    computedPriority() {
+      const hasIncidentType = !!this.selectedIncidentType
+      const bothAnswered = this.hasInjured !== null && this.hasVulnerable !== null
+      const hasVulnerablePositive = this.hasInjured === true || this.hasVulnerable === true
+      if (hasIncidentType && bothAnswered) return 'p2'
+      if (hasIncidentType) return 'p1'
+      if (hasVulnerablePositive) return 'p3'
+      if (this.isLocationInRiskZone) return 'p4'
+      return null
+    },
+    urgencyDisplayLevels() {
+      return [
+        { p: 'p1', label: 'ด่วนมาก' },
+        { p: 'p2', label: 'ด่วน' },
+        { p: 'p3', label: 'ปานกลาง' },
+        { p: 'p4', label: 'ปกติ' },
+      ]
+    },
   },
   methods: {
+    priorityLabel(p) {
+      return { p1: 'P1 — Critical', p2: 'P2 — High', p3: 'P3 — Medium', p4: 'P4 — Low' }[p] || ''
+    },
+    priorityDesc(p) {
+      return {
+        p1: 'เหตุด่วนขั้นวิกฤต — ต้องการความช่วยเหลือทันที',
+        p2: 'เหตุสำคัญมาก — ประเมินสถานการณ์แล้ว',
+        p3: 'ปานกลาง — มีผู้เสี่ยงอยู่ในเหตุการณ์',
+        p4: 'ต่ำ — อยู่ในพื้นที่เสี่ยงภัยที่กำหนด',
+      }[p] || ''
+    },
+    priorityToUrgency(p) {
+      return { p1: 'high', p2: 'high', p3: 'mid', p4: 'low' }[p] || 'mid'
+    },
+    priorityBadgeText(p) {
+      return { p1: 'P1-Critical', p2: 'P2-High', p3: 'P3-Medium', p4: 'P4-Low' }[p] || ''
+    },
+    priorityUrgencyText(p) {
+      return { p1: 'ด่วนมาก', p2: 'ด่วน', p3: 'ปานกลาง', p4: 'ปกติ' }[p] || ''
+    },
+    caseUrgencyDisplay(c) {
+      if (c.priority) {
+        return { cls: c.priority, label: this.priorityUrgencyText(c.priority) }
+      }
+      const map = { high: { cls: 'p2', label: 'ด่วน' }, mid: { cls: 'p3', label: 'ปานกลาง' }, low: { cls: 'p4', label: 'ปกติ' } }
+      return map[c.urgency] || { cls: 'p4', label: 'ปกติ' }
+    },
     setAssess(field, val) {
       this[field] = val
       const injured = field === 'hasInjured' ? val : this.hasInjured
@@ -778,7 +871,7 @@ export default {
     triggerUpload() { this.$refs.fileInput.click() },
     handleImage(e) {
       const file = e.target.files[0]
-      if (!file || this.previewImages.length >= 4) return
+      if (!file || this.previewImages.length >= 2) return
       const reader = new FileReader()
       reader.onload = ev => { this.previewImages.push(ev.target.result) }
       reader.readAsDataURL(file)
@@ -787,18 +880,19 @@ export default {
     removeImage(idx) { this.previewImages.splice(idx, 1) },
     submitForm() {
       this.caseNumber = String(Math.floor(1000 + Math.random() * 9000))
-      const urgencyMap = ['low', 'mid', 'high']
       const checkedNeeds = this.needs.filter(n => n.checked)
       const selectedType = this.incidentTypes.find(t => t.key === this.selectedIncidentType)
       const now = new Date()
       const dateStr = `${now.getDate()}/${now.getMonth()+1}/${String(now.getFullYear()).slice(-2)} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`
+      const priority = this.computedPriority
       const report = {
         id: 'NO.' + this.caseNumber,
         date: dateStr,
         location: this.form.location || 'ไม่ระบุสถานที่',
         type: selectedType ? `${selectedType.emoji} ${selectedType.label}` : 'เหตุฉุกเฉิน',
         incidentType: this.selectedIncidentType,
-        urgency: urgencyMap[this.urgency] || 'mid',
+        priority: priority,
+        urgency: priority ? this.priorityToUrgency(priority) : ['low','mid','high'][this.urgency] || 'mid',
         status: 'new',
         contactName: this.form.name || 'ไม่ระบุ',
         contactPhone: this.form.phone || 'ไม่ระบุ',
@@ -1022,6 +1116,57 @@ export default {
 }
 
 .btn-hero-icon { font-size: 20px; }
+
+/* Circular SOS hero button */
+.btn-hero.btn-hero-circle {
+  display: flex;
+  width: 164px;
+  height: 164px;
+  border-radius: 50%;
+  padding: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 17px;
+  position: relative;
+  margin: 0 auto;
+  box-shadow: 0 0 0 0 rgba(248,210,71,0.5);
+}
+.btn-hero.btn-hero-circle::before,
+.btn-hero.btn-hero-circle::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(239,68,68,0.35);
+  animation: sos-pulse 2.2s ease-out infinite;
+  pointer-events: none;
+}
+.btn-hero.btn-hero-circle::after {
+  animation-delay: 1.1s;
+}
+.btn-hero.btn-hero-circle:hover {
+  transform: scale(1.06);
+  box-shadow: 0 12px 40px rgba(239,68,68,0.6);
+}
+.btn-hero.btn-hero-red {
+  background: #ef4444;
+  color: #fff;
+  box-shadow: 0 4px 24px rgba(239,68,68,0.45);
+}
+.btn-hero.btn-hero-red:hover {
+  box-shadow: 0 12px 40px rgba(239,68,68,0.6);
+}
+.btn-hero-circle-icon {
+  font-size: 46px;
+  line-height: 1;
+}
+@keyframes sos-pulse {
+  0%   { transform: scale(1);   opacity: 0.7; }
+  80%  { transform: scale(1.55); opacity: 0; }
+  100% { transform: scale(1.55); opacity: 0; }
+}
 
 /* Stats */
 .stats-bar {
@@ -1817,6 +1962,69 @@ export default {
   background: #fafafa;
 }
 
+/* ── Priority Indicator ── */
+.priority-indicator {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 2px solid;
+}
+.priority-indicator.p1 {
+  background: #fff0f0;
+  border-color: #ef4444;
+}
+.priority-indicator.p2 {
+  background: #fff7ed;
+  border-color: #f97316;
+}
+.priority-indicator.p3 {
+  background: #fefce8;
+  border-color: #eab308;
+}
+.priority-indicator.p4 {
+  background: #f0fdf4;
+  border-color: #22c55e;
+}
+
+.priority-indicator-left { flex-shrink: 0; }
+
+.priority-badge-pill {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 800;
+  padding: 5px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.priority-indicator.p1 .priority-badge-pill { background: #ef4444; color: #fff; }
+.priority-indicator.p2 .priority-badge-pill { background: #f97316; color: #fff; }
+.priority-indicator.p3 .priority-badge-pill { background: #eab308; color: #fff; }
+.priority-indicator.p4 .priority-badge-pill { background: #22c55e; color: #fff; }
+
+.priority-indicator-right { flex: 1; }
+
+.priority-indicator-desc {
+  font-size: 13px;
+  color: #555;
+  line-height: 1.4;
+}
+
+/* ── Priority badge in tracking table / modal ── */
+.priority-badge-track {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.priority-badge-track.p1 { background: #fee2e2; color: #dc2626; }
+.priority-badge-track.p2 { background: #ffedd5; color: #c2410c; }
+.priority-badge-track.p3 { background: #fef9c3; color: #a16207; }
+.priority-badge-track.p4 { background: #dcfce7; color: #15803d; }
+
 .incident-type-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1879,6 +2087,41 @@ export default {
 .urgency-chip.active-low { border-color: #22c55e; background: #f0fdf4; color: #166534; }
 .urgency-chip.active-mid { border-color: #f59e0b; background: #fffbeb; color: #92400e; }
 .urgency-chip.active-high { border-color: #ef4444; background: #fef2f2; color: #991b1b; }
+
+.urgency-chip--readonly { cursor: not-allowed; opacity: 0.6; }
+.urgency-chip--readonly:not(.active-low):not(.active-mid):not(.active-high) { opacity: 0.35; }
+
+.urgency-auto-hint {
+  font-size: 11px;
+  font-weight: 400;
+  color: #aaa;
+}
+
+.urgency-text-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.urgency-text-display {
+  display: inline-block;
+  padding: 4px 18px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 700;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.urgency-text-display.dim {
+  opacity: 0.25;
+}
+.urgency-text-display.active {
+  opacity: 1;
+  transform: scale(1.06);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+}
+.urgency-text-display.p1 { background: #fee2e2; color: #dc2626; }
+.urgency-text-display.p2 { background: #ffedd5; color: #c2410c; }
+.urgency-text-display.p3 { background: #fef9c3; color: #a16207; }
+.urgency-text-display.p4 { background: #dcfce7; color: #15803d; }
 
 .needs-row {
   display: flex;
@@ -2653,7 +2896,9 @@ export default {
   .hero-title { font-size: 26px; line-height: 1.2; }
   .hero-sub { font-size: 13px; margin-bottom: 28px; }
   .hero-sub br { display: none; }
-  .btn-hero { font-size: 15px; padding: 13px 24px; width: 100%; justify-content: center; }
+  .btn-hero:not(.btn-hero-circle) { font-size: 15px; padding: 13px 24px; width: 100%; justify-content: center; }
+  .btn-hero.btn-hero-circle { width: 140px; height: 140px; font-size: 15px; }
+  .btn-hero-circle-icon { font-size: 38px; }
 
   /* Stats */
   .stats-bar { flex-wrap: wrap; }
@@ -2972,7 +3217,45 @@ export default {
   color: #bbb;
 }
 
+.modal-header-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.modal-header-urgency {
+  font-size: 12px !important;
+  padding: 4px 14px !important;
+  transform: none !important;
+}
+
+.modal-desc-sect,
+.modal-images-sect,
 .modal-needs-sect { margin-bottom: 20px; }
+
+.modal-desc-body {
+  background: #f8f8f8;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 14px;
+  color: #444;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.modal-images-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.modal-thumb {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1.5px solid #eee;
+  cursor: zoom-in;
+}
 
 .modal-needs-chips {
   display: flex;

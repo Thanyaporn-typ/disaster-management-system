@@ -55,6 +55,7 @@
       v-if="mode === 'citizen'"
       :submitted-reports="sharedTasks"
       :shared-shelters="sharedShelters"
+      :risk-zones="sharedRiskZones"
       @report-submitted="handleNewReport"
     />
     <FieldOfficerApp
@@ -67,7 +68,9 @@
       v-if="mode === 'admin'"
       :external-incidents="sharedTasks"
       :shared-shelters="sharedShelters"
+      :initial-risk-zones="sharedRiskZones"
       @shelters-updated="sharedShelters = $event"
+      @zones-updated="sharedRiskZones = $event"
     />
   </div>
 </template>
@@ -89,6 +92,11 @@ export default {
       newTaskCount: 0,
       toast: null,
       toastTimer: null,
+      sharedRiskZones: [
+        { id: 1, name: 'สะพานสูง',              level: 'high',   x: 65, y: 60, size: 120 },
+        { id: 2, name: 'ลาดกระบัง-รามคำแหง',    level: 'medium', x: 38, y: 30, size: 180 },
+        { id: 3, name: 'นวมินทร์',               level: 'low',    x: 78, y: 72, size: 90  },
+      ],
       sharedShelters: [
         { id: 1, name: 'โรงเรียนวัดสีลม', lat: 13.7260, lng: 100.5290, capacity: 200, available: true, tags: ['มีอาหาร/น้ำ'], icon: 'bi-building' },
         { id: 2, name: 'ศาลาประชาคมเขตบางรัก', lat: 13.7240, lng: 100.5270, capacity: 150, available: false, tags: ['มีอาหาร/น้ำ'], icon: 'bi-bank' },
